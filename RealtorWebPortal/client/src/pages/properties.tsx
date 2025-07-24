@@ -35,6 +35,9 @@ export default function Properties() {
       const baseUrl = "https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx";
       setIdxUrl(`${baseUrl}?${urlParams.toString()}`);
       trackEvent('idx_search_view', 'property_search', 'mls_integration');
+    } else {
+      // Default to the main IDX search
+      setIdxUrl("https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx?idx=cfc86fc2");
     }
   }, [location]);
 
@@ -233,17 +236,27 @@ export default function Properties() {
               <h2 className="text-2xl font-semibold text-slate-gray">
                 {isLoading ? "Loading..." : `${properties?.length || 0} Featured Properties`}
               </h2>
-              <Button 
-                variant="outline" 
-                className="text-soft-blue border-soft-blue hover:bg-soft-blue hover:text-white"
-                onClick={() => {
-                  setShowIDX(true);
-                  setIdxUrl("https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx?idx=cfc86fc2");
-                }}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Search All MLS Listings
-              </Button>
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  className="text-soft-blue border-soft-blue hover:bg-soft-blue hover:text-white"
+                  onClick={() => {
+                    setShowIDX(true);
+                    setIdxUrl("https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx?idx=cfc86fc2");
+                  }}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Quick MLS Search
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="text-soft-blue border-soft-blue hover:bg-soft-blue hover:text-white"
+                  onClick={() => window.location.href = '/idx-search'}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Full MLS Search
+                </Button>
+              </div>
             </div>
           
           {isLoading ? (

@@ -86,7 +86,7 @@ export default function Home() {
                 className="bg-soft-blue text-white px-8 py-3 hover:bg-ocean-blue text-lg"
                 onClick={() => handleCTAClick('view_all_properties')}
               >
-                View All Properties
+                Search All Listings
               </Button>
             </Link>
           </div>

@@ -1,19 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
-import { Neighborhood } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, TrendingUp, Home, Users } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { Link } from "wouter";
+import { neighborhoodsData } from "@/data/neighborhoods";
 
 export default function Neighborhoods() {
-  const { data: neighborhoods, isLoading } = useQuery<Neighborhood[]>({
-    queryKey: ["/api/neighborhoods"]
-  });
+  const neighborhoods = neighborhoodsData;
+  const isLoading = false;
 
   const handleNeighborhoodClick = (neighborhoodName: string) => {
     trackEvent('neighborhood_click', 'engagement', neighborhoodName);
@@ -72,13 +69,13 @@ export default function Neighborhoods() {
           {isLoading ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-96 w-full rounded-xl" />
+                <div key={i} className="h-96 w-full rounded-xl bg-gray-200 animate-pulse" />
               ))}
             </div>
           ) : (
             <div className="space-y-12">
               {neighborhoods?.map((neighborhood, index) => (
-                <Card key={neighborhood.id} className="border-0 shadow-lg overflow-hidden">
+                <Card key={neighborhood.name} className="border-0 shadow-lg overflow-hidden">
                   <div className={`grid grid-cols-1 lg:grid-cols-2 gap-0 ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
                     <div className={`relative ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}>
                       <img 
@@ -145,14 +142,17 @@ export default function Neighborhoods() {
                             className="bg-soft-blue text-white hover:bg-ocean-blue w-full sm:w-auto"
                             onClick={() => handleNeighborhoodClick(neighborhood.name)}
                           >
+                            <Home className="w-4 h-4 mr-2" />
                             View Properties
                           </Button>
                         </Link>
-                        <Link href="/contact">
+                        <Link href={`/neighborhoods/${neighborhood.name.toLowerCase().replace(/\s+/g, '-')}`}>
                           <Button 
                             variant="outline" 
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
+                            onClick={() => handleNeighborhoodClick(neighborhood.name)}
                           >
+                            <Users className="w-4 h-4 mr-2" />
                             Learn More
                           </Button>
                         </Link>

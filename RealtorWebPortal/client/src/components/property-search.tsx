@@ -74,7 +74,7 @@ export default function PropertySearch() {
       idxParams.append('city', searchData.location.trim());
     }
     
-    // Navigate to properties page with IDX integration
+    // Navigate to properties page (now IDX search) with parameters
     const queryString = idxParams.toString();
     setLocation(`/properties${queryString ? `?${queryString}` : ''}`);
   };

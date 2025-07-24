@@ -1,0 +1,98 @@
+Build me a full-featured, production-ready WordPress real estate website for my team, "Shoreline Realty Group" in St. Petersburg, Florida, hosted on Hostinger. I want the site to generate inbound leads automatically.
+
+Include and configure the following:
+
+Theme & Design
+
+Use a fast, SEO-optimized theme (e.g., Astra or Kadence).
+
+Mobile-first, modern design with beachy, clean aesthetic. Use shades of slate gray and soft blue for branding.
+
+Home page includes hero section with headline, CTA, featured listings, and recent blog posts.
+
+IDX Integration
+
+Add and configure a WordPress IDX plugin like iHomeFinder or Realtyna (SEO-optimized).
+
+Display property search on homepage and dedicated listings page.
+
+Make sure listings are crawlable for SEO.
+
+Blog System
+
+Set up blog categories: Neighborhood Guides, Market Updates, Buying Tips, Selling Tips.
+
+Enable featured images, author box, social sharing.
+
+Install a plugin like WP Scheduled Posts to support automated publishing.
+
+Google My Business Integration
+
+Embed GMB map widget on contact page.
+
+Display GMB reviews using plugin like Widgets for Google Reviews.
+
+Enable automation to create GMB posts whenever a new blog is published (can use Zapier or WP Webhooks plugin).
+
+Lead Capture
+
+Add forms: Contact Us, Schedule Consultation, Free Home Valuation.
+
+Use WPForms or Fluent Forms with CRM-ready fields.
+
+Forms should email responses and save leads to a backend database or connect to Zapier.
+
+Chatbot
+
+Add AI-powered chatbot widget using Tidio, Chatbase, or integrate with OpenAI (optional for v1: include placeholder).
+
+Should welcome visitors, answer common questions, and offer to capture contact info.
+
+SEO Schema & Plugins
+
+Install RankMath SEO and configure site-wide schema.
+
+Add schema for:
+
+Organization (real estate business)
+
+Blog posts
+
+LocalBusiness (with location data for St. Pete)
+
+FAQ (for key pages)
+
+Generate sitemap, submit to Google Search Console, and integrate Google Analytics 4.
+
+Performance & Security
+
+Install caching plugin (LiteSpeed or WP Rocket).
+
+Configure HTTPS with SSL.
+
+Enable security basics with Wordfence or similar.
+
+Pages to Include
+
+Home
+
+About
+
+Search Listings (IDX)
+
+Blog
+
+Contact
+
+Neighborhoods (dynamic or manually built with blog links)
+
+Lead Magnet page (e.g. Free Relocation Guide)
+
+Final Output
+
+Make sure everything is mobile optimized.
+
+Provide a brief guide on how to update blog posts and manage IDX.
+
+Make the site scalable for future automation: blog generation, GMB post auto-publish, and AI CRM agents.
+
