@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function IDXSearch() {
   const [location, setLocation] = useLocation();
-  const [idxUrl, setIdxUrl] = useState("https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx?idx=cfc86fc2&embed=1");
+  const [idxUrl, setIdxUrl] = useState("https://stellar.mlsmatrix.com/Matrix/Public/IDXMap.aspx?count=1&idx=cfc86fc2&pv=&or=&embed=true");
   const [searchFilters, setSearchFilters] = useState<string[]>([]);
   const [iframeError, setIframeError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
@@ -311,7 +311,7 @@ export default function IDXSearch() {
               title="MLS Matrix Property Search"
               className="w-full h-full"
 
-              referrerPolicy="no-referrer-when-downgrade"
+
               allow="fullscreen"
               onError={() => setIframeError(true)}
               onLoad={(e) => {
