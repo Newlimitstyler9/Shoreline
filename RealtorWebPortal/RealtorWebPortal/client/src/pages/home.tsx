@@ -3,6 +3,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import PropertyCard from "@/components/property-card";
 import PropertySearch from "@/components/property-search";
+import GoogleReviews from "@/components/google-reviews";
 import { Property, BlogPost, Neighborhood } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -86,7 +87,7 @@ export default function Home() {
                 className="bg-soft-blue text-white px-8 py-3 hover:bg-ocean-blue text-lg"
                 onClick={() => handleCTAClick('view_all_properties')}
               >
-                View All Properties
+                Search All Listings
               </Button>
             </Link>
           </div>
@@ -157,6 +158,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Google Reviews Section */}
+      <GoogleReviews />
 
       {/* Neighborhoods Section */}
       <section className="section-padding bg-white">
