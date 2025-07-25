@@ -61,6 +61,10 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        "soft-blue": "#4A90E2",
+        "ocean-blue": "#2E5BBA",
+        "slate-gray": "#6B7280",
+        "beige": "#F5F5DC",
       },
       keyframes: {
         "accordion-down": {

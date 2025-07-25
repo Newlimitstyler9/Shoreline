@@ -128,6 +128,22 @@
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
+/* Video container for hero background */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .hero-bg {
   background: linear-gradient(135deg, var(--soft-blue) 0%, var(--ocean-blue) 100%);
 }
@@ -208,4 +224,42 @@ html {
 
 .text-responsive-md {
   @apply text-lg md:text-xl lg:text-2xl;
+}
+
+/* Mobile-specific utilities */
+.mobile-padding {
+  @apply px-4 md:px-6 lg:px-8;
+}
+
+.mobile-button {
+  @apply h-11 px-4 text-sm md:h-auto md:px-6 md:text-base;
+}
+
+.mobile-input {
+  @apply h-11 text-base md:h-auto md:text-sm;
+}
+
+/* Mobile-optimized container */
+.container-mobile {
+  @apply container mx-auto px-3 md:px-4;
+}
+
+/* Touch-friendly buttons for mobile */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+/* Hide scrollbars on mobile for cleaner look */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile-friendly focus states */
+.mobile-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-soft-blue focus:ring-offset-1;
 }

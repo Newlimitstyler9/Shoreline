@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Home, X } from "lucide-react";
+import { Menu, X, Phone, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { useIsMobile } from "@/hooks/use-mobile";
 import logo1 from "@assets/ChatGPT Image Jul 22, 2025, 07_33_29 PM_1753231947309.png";
 
 export default function Header() {
   const [location] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const handleCTAClick = () => {
     trackEvent('header_cta_click', 'engagement', 'free_home_valuation');
@@ -30,7 +33,27 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
-      <nav className="container-width py-4">
+      {/* Contact Info Bar - Desktop */}
+      <div className="hidden lg:block bg-gray-50 border-b">
+        <div className="container-width py-2">
+          <div className="flex justify-end space-x-6 text-sm">
+            <div className="flex items-center">
+              <Phone className="w-4 h-4 text-soft-blue mr-2" />
+              <a href="tel:7275550123" className="text-gray-700 hover:text-soft-blue">
+                (727) 555-0123
+              </a>
+            </div>
+            <div className="flex items-center">
+              <Mail className="w-4 h-4 text-soft-blue mr-2" />
+              <a href="/contact" className="text-gray-700 hover:text-soft-blue">
+                Email Us
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav className={`container-width ${isMobile ? 'py-3' : 'py-4'}`}>
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/">
@@ -38,11 +61,11 @@ export default function Header() {
               <img 
                 src={logo1} 
                 alt="Shoreline Realty Group Logo" 
-                className="w-12 h-12"
+                className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'}`}
               />
               <div>
-                <h1 className="text-slate-gray font-bold text-xl">SHORELINE</h1>
-                <p className="text-gray-600 text-sm">REALTY GROUP</p>
+                <h1 className={`text-slate-gray font-bold ${isMobile ? 'text-lg' : 'text-xl'}`}>SHORELINE</h1>
+                <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>REALTY GROUP</p>
               </div>
             </div>
           </Link>
@@ -78,52 +101,84 @@ export default function Header() {
           
           {/* Mobile Menu */}
           <div className="lg:hidden">
-            <Sheet>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="p-2">
                   <Menu className="w-6 h-6 text-slate-gray" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80">
+              <SheetContent side="right" className="w-80 p-0">
                 <div className="flex flex-col h-full">
-                  {/* Mobile Logo */}
-                  <div className="flex items-center space-x-3 pb-6 border-b">
-                    <img 
-                      src={logo1} 
-                      alt="Shoreline Realty Group Logo" 
-                      className="w-10 h-10"
-                    />
-                    <div>
-                      <h2 className="text-slate-gray font-bold text-lg">SHORELINE</h2>
-                      <p className="text-gray-600 text-xs">REALTY GROUP</p>
+                  {/* Mobile Header */}
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <div className="flex items-center space-x-3">
+                      <img 
+                        src={logo1} 
+                        alt="Shoreline Realty Group Logo" 
+                        className="w-8 h-8"
+                      />
+                      <div>
+                        <h2 className="text-slate-gray font-bold text-sm">SHORELINE</h2>
+                        <p className="text-gray-600 text-xs">REALTY GROUP</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="p-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
+
+                  {/* Mobile Contact Info */}
+                  <div className="p-4 bg-gray-50 border-b">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 text-soft-blue mr-2" />
+                        <a href="tel:7275550123" className="text-gray-700">
+                          (727) 555-0123
+                        </a>
+                      </div>
+                      <div className="flex items-center">
+                        <Mail className="w-4 h-4 text-soft-blue mr-2" />
+                        <a href="/contact" className="text-gray-700">
+                          Email Us
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  
+
                   {/* Mobile Navigation */}
-                  <div className="flex-1 py-6">
-                    <div className="space-y-4">
+                  <div className="flex-1 p-4">
+                    <nav className="space-y-4">
                       {navigation.map((item) => (
                         <Link key={item.href} href={item.href}>
                           <div 
-                            className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
-                              isActive(item.href)
-                                ? "bg-soft-blue text-white"
+                            className={`block py-2 px-3 rounded-lg transition-colors cursor-pointer ${
+                              isActive(item.href) 
+                                ? "bg-soft-blue text-white" 
                                 : "text-slate-gray hover:bg-gray-100"
                             }`}
+                            onClick={() => setMobileMenuOpen(false)}
                           >
                             {item.name}
                           </div>
                         </Link>
                       ))}
-                    </div>
+                    </nav>
                   </div>
-                  
+
                   {/* Mobile CTA */}
-                  <div className="pt-6 border-t">
+                  <div className="p-4 border-t">
                     <Link href="/contact">
                       <Button 
-                        className="bg-soft-blue text-white w-full py-3 hover:bg-ocean-blue font-medium"
-                        onClick={handleCTAClick}
+                        className="w-full bg-soft-blue text-white hover:bg-ocean-blue"
+                        onClick={() => {
+                          handleCTAClick();
+                          setMobileMenuOpen(false);
+                        }}
                       >
                         Free Home Valuation
                       </Button>
