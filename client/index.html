@@ -15,7 +15,7 @@
     <meta property="og:title" content="Shoreline Realty Group - St. Petersburg Real Estate" />
     <meta property="og:description" content="Premier waterfront properties and exceptional service from your trusted local real estate experts in St. Petersburg, Florida." />
     <meta property="og:image" content="https://images.unsplash.com/photo-1551244072-5d12893278ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630" />
-    <meta property="og:url" content="https://shorelinestpete.com" />
+    <meta property="og:url" content="" id="og-url" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Shoreline Realty Group" />
     <meta property="og:locale" content="en_US" />
@@ -28,7 +28,7 @@
     <meta property="twitter:site" content="@shorelinerealty" />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://shorelinestpete.com" />
+    <link rel="canonical" href="" id="canonical-url" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -37,6 +37,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://images.unsplash.com" />
+    
+    <script>
+      // Set canonical URL dynamically based on current domain
+      document.addEventListener('DOMContentLoaded', function() {
+        const canonicalUrl = document.getElementById('canonical-url');
+        if (canonicalUrl) {
+          canonicalUrl.href = window.location.origin;
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
