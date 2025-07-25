@@ -11,6 +11,7 @@ import logo1 from "@assets/ChatGPT Image Jul 22, 2025, 07_33_29 PM_1753231947309
 export default function Header() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const isMobile = useIsMobile();
   
   const handleCTAClick = () => {
@@ -112,7 +113,7 @@ export default function Header() {
             ))}
             
             {/* Buyers & Sellers Dropdown */}
-            <DropdownMenu>
+            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
@@ -123,31 +124,33 @@ export default function Header() {
                   }`}
                 >
                   <span>{buyersSellersMenu.name}</span>
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-80 p-4">
-                <div className="grid grid-cols-2 gap-6">
-                  {buyersSellersMenu.items.map((section, sectionIndex) => (
-                    <div key={sectionIndex}>
-                      <h3 className="font-semibold text-slate-gray mb-3 text-sm uppercase tracking-wide">
-                        {section.title}
-                      </h3>
-                      <div className="space-y-2">
-                        {section.items.map((item, itemIndex) => {
-                          const IconComponent = item.icon;
-                          return (
-                            <Link key={itemIndex} href={item.href}>
-                              <DropdownMenuItem className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <IconComponent className="w-4 h-4 text-soft-blue" />
-                                <span className="text-sm text-slate-gray">{item.name}</span>
-                              </DropdownMenuItem>
-                            </Link>
-                          );
-                        })}
+              <DropdownMenuContent align="start" className="w-80 max-h-96 overflow-y-auto">
+                <div className="p-4">
+                  <div className="grid grid-cols-1 gap-6">
+                    {buyersSellersMenu.items.map((section, sectionIndex) => (
+                      <div key={sectionIndex}>
+                        <h3 className="font-semibold text-slate-gray mb-3 text-sm uppercase tracking-wide border-b border-gray-200 pb-2">
+                          {section.title}
+                        </h3>
+                        <div className="space-y-1">
+                          {section.items.map((item, itemIndex) => {
+                            const IconComponent = item.icon;
+                            return (
+                              <Link key={itemIndex} href={item.href}>
+                                <DropdownMenuItem className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                                  <IconComponent className="w-4 h-4 text-soft-blue flex-shrink-0" />
+                                  <span className="text-sm text-slate-gray">{item.name}</span>
+                                </DropdownMenuItem>
+                              </Link>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -217,43 +220,45 @@ export default function Header() {
                   </div>
 
                   {/* Mobile Navigation */}
-                  <div className="flex-1 p-4">
-                    <nav className="space-y-4">
-                      {navigation.map((item) => (
-                        <Link key={item.href} href={item.href}>
-                          <div 
-                            className={`block py-2 px-3 rounded-lg transition-colors cursor-pointer ${
-                              isActive(item.href) 
-                                ? "bg-soft-blue text-white" 
-                                : "text-slate-gray hover:bg-gray-100"
-                            }`}
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {item.name}
-                          </div>
-                        </Link>
-                      ))}
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-4 space-y-4">
+                      <nav className="space-y-2">
+                        {navigation.map((item) => (
+                          <Link key={item.href} href={item.href}>
+                            <div 
+                              className={`block py-3 px-4 rounded-lg transition-colors cursor-pointer ${
+                                isActive(item.href) 
+                                  ? "bg-soft-blue text-white" 
+                                  : "text-slate-gray hover:bg-gray-100"
+                              }`}
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {item.name}
+                            </div>
+                          </Link>
+                        ))}
+                      </nav>
                       
                       {/* Mobile Buyers & Sellers Section */}
-                      <div className="pt-4 border-t">
-                        <h3 className="text-sm font-semibold text-slate-gray mb-3 uppercase tracking-wide">
+                      <div className="pt-4 border-t border-gray-200">
+                        <h3 className="text-sm font-semibold text-slate-gray mb-4 uppercase tracking-wide">
                           {buyersSellersMenu.name}
                         </h3>
                         {buyersSellersMenu.items.map((section, sectionIndex) => (
-                          <div key={sectionIndex} className="mb-4">
-                            <h4 className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                          <div key={sectionIndex} className="mb-6">
+                            <h4 className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide px-1">
                               {section.title}
                             </h4>
-                            <div className="space-y-1 ml-2">
+                            <div className="space-y-1">
                               {section.items.map((item, itemIndex) => {
                                 const IconComponent = item.icon;
                                 return (
                                   <Link key={itemIndex} href={item.href}>
                                     <div 
-                                      className="flex items-center space-x-2 py-2 px-3 rounded-lg transition-colors cursor-pointer text-slate-gray hover:bg-gray-100"
+                                      className="flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors cursor-pointer text-slate-gray hover:bg-gray-100"
                                       onClick={() => setMobileMenuOpen(false)}
                                     >
-                                      <IconComponent className="w-4 h-4 text-soft-blue" />
+                                      <IconComponent className="w-4 h-4 text-soft-blue flex-shrink-0" />
                                       <span className="text-sm">{item.name}</span>
                                     </div>
                                   </Link>
@@ -263,7 +268,7 @@ export default function Header() {
                           </div>
                         ))}
                       </div>
-                    </nav>
+                    </div>
                   </div>
 
                   {/* Mobile CTA */}
