@@ -172,17 +172,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
             failed: failureCount
           }
         });
-      } else {
-        // Single blog post
-        blogData = {
-          title: req.body.title,
-          slug: req.body.slug,
-          excerpt: req.body.excerpt,
-          content: req.body.content,
-          category: req.body.category,
-          featuredImage: req.body.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-          author: req.body.author || "Shoreline Realty Group"
-        };
+             } else {
+         // Single blog post
+         // Validate for n8n dynamic content
+         if (!req.body.title || req.body.title === "{{ $json.message.content }}" || req.body.title.trim() === "") {
+           return res.status(400).json({ 
+             message: "Missing or invalid title. Please ensure n8n variables are properly resolved.",
+             field: "title"
+           });
+         }
+         
+         if (!req.body.content || req.body.content === "{{ $('Editor').item.json.output }}" || req.body.content.trim() === "") {
+           return res.status(400).json({ 
+             message: "Missing or invalid content. Please ensure n8n variables are properly resolved.",
+             field: "content"
+           });
+         }
+         
+         // Check for unresolved template variables
+         if (req.body.title.includes("{{") || req.body.title.includes("}}")) {
+           return res.status(400).json({ 
+             message: "Title contains unresolved n8n template variables",
+             field: "title"
+           });
+         }
+         
+         if (req.body.content.includes("{{") || req.body.content.includes("}}")) {
+           return res.status(400).json({ 
+             message: "Content contains unresolved n8n template variables",
+             field: "content"
+           });
+         }
+         
+         blogData = {
+           title: req.body.title.trim(),
+           slug: req.body.slug.trim(),
+           excerpt: req.body.excerpt ? req.body.excerpt.trim() : "",
+           content: req.body.content.trim(),
+           category: req.body.category || "General",
+           featuredImage: req.body.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+           author: req.body.author || "Shoreline Realty Group"
+         };
         
         const post = await storage.createBlogPost(blogData);
         res.status(201).json({ 
@@ -217,21 +247,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = [];
       for (const postData of req.body) {
         try {
-          // Validate required fields
-          if (!postData.title || !postData.slug || !postData.content) {
+          // Validate required fields with better error handling for n8n dynamic content
+          const missingFields = [];
+          if (!postData.title || postData.title === "{{ $json.message.content }}" || postData.title.trim() === "") {
+            missingFields.push("title");
+          }
+          if (!postData.slug || postData.slug.trim() === "") {
+            missingFields.push("slug");
+          }
+          if (!postData.content || postData.content === "{{ $('Editor').item.json.output }}" || postData.content.trim() === "") {
+            missingFields.push("content");
+          }
+          
+          if (missingFields.length > 0) {
             results.push({
               success: false,
-              error: "Missing required fields: title, slug, and content are required",
-              data: postData
+              error: `Missing or invalid required fields: ${missingFields.join(', ')}. Please ensure n8n variables are properly resolved.`,
+              data: postData,
+              missingFields: missingFields
+            });
+            continue;
+          }
+          
+          // Clean and validate content
+          const cleanTitle = postData.title.trim();
+          const cleanSlug = postData.slug.trim();
+          const cleanContent = postData.content.trim();
+          
+          // Additional validation for n8n template variables that weren't resolved
+          if (cleanTitle.includes("{{") || cleanTitle.includes("}}")) {
+            results.push({
+              success: false,
+              error: "Title contains unresolved n8n template variables",
+              data: postData,
+              field: "title"
+            });
+            continue;
+          }
+          
+          if (cleanContent.includes("{{") || cleanContent.includes("}}")) {
+            results.push({
+              success: false,
+              error: "Content contains unresolved n8n template variables",
+              data: postData,
+              field: "content"
             });
             continue;
           }
           
           const singleBlogData = {
-            title: postData.title,
-            slug: postData.slug,
-            excerpt: postData.excerpt || "",
-            content: postData.content,
+            title: cleanTitle,
+            slug: cleanSlug,
+            excerpt: postData.excerpt ? postData.excerpt.trim() : "",
+            content: cleanContent,
             category: postData.category || "General",
             featuredImage: postData.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
             author: postData.author || "Shoreline Realty Group"
@@ -315,6 +383,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to check API key validity
   app.get("/api/admin/auth/check", validateApiKey, (req: any, res: any) => {
     res.json({ message: "API key is valid", authenticated: true });
+  });
+
+  // Test endpoint for n8n variable validation
+  app.post("/api/admin/blog/test", validateApiKey, async (req: any, res: any) => {
+    try {
+      const testData = Array.isArray(req.body) ? req.body[0] : req.body;
+      
+      const validation = {
+        title: {
+          value: testData.title,
+          isValid: testData.title && 
+                   testData.title !== "{{ $json.message.content }}" && 
+                   !testData.title.includes("{{") && 
+                   !testData.title.includes("}}") &&
+                   testData.title.trim() !== "",
+          issues: [] as string[]
+        },
+        slug: {
+          value: testData.slug,
+          isValid: testData.slug && testData.slug.trim() !== "",
+          issues: [] as string[]
+        },
+        content: {
+          value: testData.content ? testData.content.substring(0, 100) + "..." : null,
+          isValid: testData.content && 
+                   testData.content !== "{{ $('Editor').item.json.output }}" && 
+                   !testData.content.includes("{{") && 
+                   !testData.content.includes("}}") &&
+                   testData.content.trim() !== "",
+          issues: [] as string[]
+        }
+      };
+      
+      // Add specific issues
+      if (!validation.title.isValid) {
+        if (!testData.title) validation.title.issues.push("Title is missing");
+        if (testData.title === "{{ $json.message.content }}") validation.title.issues.push("Title contains unresolved n8n variable");
+        if (testData.title.includes("{{") || testData.title.includes("}}")) validation.title.issues.push("Title contains template variables");
+        if (testData.title.trim() === "") validation.title.issues.push("Title is empty");
+      }
+      
+      if (!validation.slug.isValid) {
+        validation.slug.issues.push("Slug is missing or empty");
+      }
+      
+      if (!validation.content.isValid) {
+        if (!testData.content) validation.content.issues.push("Content is missing");
+        if (testData.content === "{{ $('Editor').item.json.output }}") validation.content.issues.push("Content contains unresolved n8n variable");
+        if (testData.content.includes("{{") || testData.content.includes("}}")) validation.content.issues.push("Content contains template variables");
+        if (testData.content.trim() === "") validation.content.issues.push("Content is empty");
+      }
+      
+      const isValid = validation.title.isValid && validation.slug.isValid && validation.content.isValid;
+      
+      res.json({
+        isValid,
+        validation,
+        message: isValid ? "Data is valid and ready for blog creation" : "Data has validation issues",
+        recommendations: isValid ? [] : [
+          "Ensure all n8n variables are properly resolved before sending to API",
+          "Check that title, slug, and content are not empty",
+          "Verify that no template variables remain in the final content"
+        ]
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Validation test failed", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
   });
 
   // Neighborhoods endpoint
