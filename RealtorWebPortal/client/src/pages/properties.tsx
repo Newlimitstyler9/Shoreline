@@ -256,6 +256,9 @@ export default function Properties() {
                 style={{ border: 'none' }}
                 title="MLS Property Search Results"
                 className="w-full h-full"
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+                referrerPolicy="no-referrer-when-downgrade"
+                allow="fullscreen"
               />
             </div>
           </div>

@@ -17,21 +17,40 @@ const app = express();
 // Validate environment variables
 validateEnvironment();
 
-// Security middleware
+// Apply Helmet for security headers
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://www.google-analytics.com"],
-      frameAncestors: ["'none'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "data:"],
+      imgSrc: ["'self'", "https:", "data:", "blob:"],
+      connectSrc: [
+        "'self'", 
+        "https:", 
+        "wss:", 
+        "https://maps.googleapis.com",
+        "https://stellar.mlsmatrix.com",
+        "*.mlsmatrix.com"
+      ],
+      frameSrc: [
+        "'self'", 
+        "https:",
+        "https://stellar.mlsmatrix.com",
+        "*.mlsmatrix.com",
+        "https://maps.google.com",
+        "https://www.google.com"
+      ],
+      frameAncestors: ["'self'", "https:", "*.mlsmatrix.com"],
+      fontSrc: ["'self'", "https:", "data:"],
+      mediaSrc: ["'self'", "https:", "data:"],
+      objectSrc: ["'none'"],
       baseUri: ["'self'"],
-      formAction: ["'self'"]
-    }
+      formAction: ["'self'", "https:"],
+      upgradeInsecureRequests: [],
+    },
   },
+  crossOriginEmbedderPolicy: false,
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -43,21 +62,25 @@ app.use(helmet({
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
-    'http://148.230.82.61',
-    'https://148.230.82.61',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    // Add your domain here
-    'https://shorelinestpete.com',
-    'http://shorelinestpete.com',
-    // n8n automation origins
-    'https://app.n8n.cloud',
-    'https://n8n.io',
-    'http://localhost:5678',
-    'https://localhost:5678',
-    // Your n8n instance on Render
-    'https://n8n-hub.onrender.com'
-  ];
+  'http://148.230.82.61',
+  'https://148.230.82.61',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  // Add your domain here
+  'https://shorelinestpete.com',
+  'http://shorelinestpete.com',
+  // n8n automation origins
+  'https://app.n8n.cloud',
+  'https://n8n.io',
+  'http://localhost:5678',
+  'https://localhost:5678',
+  // Your n8n instance on Render
+  'https://n8n-hub.onrender.com',
+  // MLS Matrix domains
+  'https://stellar.mlsmatrix.com',
+  'https://matrix.mlsmatrix.com',
+  'https://mlsmatrix.com'
+];
   
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
@@ -66,6 +89,9 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Allow iframe embedding for IDX/MLS content
+  res.header('X-Frame-Options', 'SAMEORIGIN');
   
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);

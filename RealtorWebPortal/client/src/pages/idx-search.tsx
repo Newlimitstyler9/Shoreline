@@ -245,6 +245,9 @@ export default function IDXSearch() {
             }}
             title="MLS Matrix Property Search"
             className="w-full h-full"
+            sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+            referrerPolicy="no-referrer-when-downgrade"
+            allow="fullscreen"
           />
         </div>
       </section>
