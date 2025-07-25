@@ -202,9 +202,15 @@ export const requestSizeLimit = (req: Request, res: Response, next: NextFunction
 // IP address validation
 export const validateIP = (req: Request, res: Response, next: NextFunction) => {
   const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+  const origin = req.headers.origin;
   
-  // Allow blog API endpoint from private IPs (for n8n automation)
+  // Allow blog API endpoint from private IPs and Render (for n8n automation)
   if (req.path === '/api/admin/blog') {
+    // Allow requests from Render domains (n8n-hub.onrender.com)
+    if (origin && origin.includes('onrender.com')) {
+      return next();
+    }
+    // Allow requests from private IPs for local n8n instances
     return next();
   }
   
