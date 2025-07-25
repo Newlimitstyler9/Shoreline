@@ -1,13 +1,63 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertLeadSchema, insertPropertySchema } from "@shared/schema";
+import { insertLeadSchema, insertPropertySchema, insertBlogPostSchema } from "@shared/schema";
 import { z } from "zod";
 import { 
   validateLeadData, 
   validateNewsletterData, 
   handleValidationErrors
 } from "./security";
+
+// Simple API key validation middleware
+const validateApiKey = (req: any, res: any, next: any) => {
+  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+  
+  // Use environment variable for API key, fallback to default for development
+  const validApiKey = process.env.API_KEY || 'shoreline-blog-api-2024';
+  
+  if (!apiKey || apiKey !== validApiKey) {
+    return res.status(401).json({ 
+      error: 'Unauthorized', 
+      message: 'Valid API key required in X-API-Key header or Authorization Bearer token' 
+    });
+  }
+  
+  next();
+};
+
+// Blog post validation
+const validateBlogPost = [
+  // Title validation
+  (req: any, res: any, next: any) => {
+    const { title, content, category, excerpt } = req.body;
+    
+    if (!title || title.trim().length < 5) {
+      return res.status(400).json({ error: 'Title is required and must be at least 5 characters' });
+    }
+    
+    if (!content || content.trim().length < 50) {
+      return res.status(400).json({ error: 'Content is required and must be at least 50 characters' });
+    }
+    
+    if (!category) {
+      return res.status(400).json({ error: 'Category is required' });
+    }
+    
+    if (!excerpt || excerpt.trim().length < 20) {
+      return res.status(400).json({ error: 'Excerpt is required and must be at least 20 characters' });
+    }
+    
+    // Auto-generate slug if not provided
+    if (!req.body.slug) {
+      req.body.slug = title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+    
+    next();
+  }
+];
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Properties endpoints
@@ -51,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Blog endpoints
+  // Blog endpoints (public)
   app.get("/api/blog", async (req, res) => {
     try {
       const category = req.query.category as string;
@@ -72,6 +122,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog post" });
     }
+  });
+
+  // Admin/API endpoints for blog management (for n8n automation)
+  app.post("/api/admin/blog", validateApiKey, validateBlogPost, async (req: any, res: any) => {
+    try {
+      const blogData = {
+        title: req.body.title,
+        slug: req.body.slug,
+        excerpt: req.body.excerpt,
+        content: req.body.content,
+        category: req.body.category,
+        featuredImage: req.body.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        author: req.body.author || "Shoreline Realty Group"
+      };
+      
+      const post = await storage.createBlogPost(blogData);
+      res.status(201).json({ 
+        message: "Blog post created successfully", 
+        post: post,
+        url: `https://shorelinestpete.com/blog/${post.slug}`
+      });
+    } catch (error) {
+      console.error('Blog creation error:', error);
+      res.status(500).json({ message: "Failed to create blog post", error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Get all blog posts for admin (with API key)
+  app.get("/api/admin/blog", validateApiKey, async (req: any, res: any) => {
+    try {
+      const posts = await storage.getBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  // Update blog post
+  app.put("/api/admin/blog/:slug", validateApiKey, validateBlogPost, async (req: any, res: any) => {
+    try {
+      const blogData = {
+        title: req.body.title,
+        slug: req.body.slug,
+        excerpt: req.body.excerpt,
+        content: req.body.content,
+        category: req.body.category,
+        featuredImage: req.body.featuredImage,
+        author: req.body.author || "Shoreline Realty Group"
+      };
+      
+      const post = await storage.updateBlogPost(req.params.slug, blogData);
+      if (!post) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      res.json({ 
+        message: "Blog post updated successfully", 
+        post: post,
+        url: `https://shorelinestpete.com/blog/${post.slug}`
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update blog post", error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Delete blog post
+  app.delete("/api/admin/blog/:slug", validateApiKey, async (req: any, res: any) => {
+    try {
+      const success = await storage.deleteBlogPost(req.params.slug);
+      if (!success) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      res.json({ message: "Blog post deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
+  // API endpoint to check API key validity
+  app.get("/api/admin/auth/check", validateApiKey, (req: any, res: any) => {
+    res.json({ message: "API key is valid", authenticated: true });
   });
 
   // Neighborhoods endpoint

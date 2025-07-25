@@ -43,6 +43,8 @@ export interface IStorage {
   getBlogPosts(category?: string): Promise<BlogPost[]>;
   getBlogPost(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(slug: string, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(slug: string): Promise<boolean>;
   
   // Neighborhoods
   getNeighborhoods(): Promise<Neighborhood[]>;
@@ -510,6 +512,32 @@ export class MemStorage implements IStorage {
     };
     this.blogPosts.set(id, post);
     return post;
+  }
+
+  async updateBlogPost(slug: string, postUpdate: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const existingPost = Array.from(this.blogPosts.values()).find(post => post.slug === slug);
+    if (!existingPost) {
+      return undefined;
+    }
+
+    const updatedPost: BlogPost = {
+      ...existingPost,
+      ...postUpdate,
+      updatedAt: new Date(),
+    };
+
+    this.blogPosts.set(existingPost.id, updatedPost);
+    return updatedPost;
+  }
+
+  async deleteBlogPost(slug: string): Promise<boolean> {
+    const existingPost = Array.from(this.blogPosts.values()).find(post => post.slug === slug);
+    if (!existingPost) {
+      return false;
+    }
+
+    this.blogPosts.delete(existingPost.id);
+    return true;
   }
 
   // Neighborhood methods

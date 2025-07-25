@@ -49,7 +49,14 @@ app.use((req, res, next) => {
     'http://localhost:5173',
     // Add your domain here
     'https://shorelinestpete.com',
-    'http://shorelinestpete.com'
+    'http://shorelinestpete.com',
+    // n8n automation origins
+    'https://app.n8n.cloud',
+    'https://n8n.io',
+    'http://localhost:5678',
+    'https://localhost:5678',
+    // Your n8n instance on Render
+    'https://n8n-hub.onrender.com'
   ];
   
   if (origin && allowedOrigins.includes(origin)) {
