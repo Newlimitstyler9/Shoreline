@@ -125,24 +125,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin/API endpoints for blog management (for n8n automation)
-  app.post("/api/admin/blog", validateApiKey, validateBlogPost, async (req: any, res: any) => {
+  app.post("/api/admin/blog", validateApiKey, async (req: any, res: any) => {
     try {
-      const blogData = {
-        title: req.body.title,
-        slug: req.body.slug,
-        excerpt: req.body.excerpt,
-        content: req.body.content,
-        category: req.body.category,
-        featuredImage: req.body.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        author: req.body.author || "Shoreline Realty Group"
-      };
+      let blogData;
       
-      const post = await storage.createBlogPost(blogData);
-      res.status(201).json({ 
-        message: "Blog post created successfully", 
-        post: post,
-        url: `https://shorelinestpete.com/blog/${post.slug}`
-      });
+      // Handle both single blog post and array of blog posts
+      if (Array.isArray(req.body)) {
+        // Array of blog posts - bulk creation
+        const results = [];
+        for (const postData of req.body) {
+          try {
+            const singleBlogData = {
+              title: postData.title,
+              slug: postData.slug,
+              excerpt: postData.excerpt,
+              content: postData.content,
+              category: postData.category,
+              featuredImage: postData.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+              author: postData.author || "Shoreline Realty Group"
+            };
+            
+            const post = await storage.createBlogPost(singleBlogData);
+            results.push({
+              success: true,
+              post: post,
+              url: `https://shorelinestpete.com/blog/${post.slug}`
+            });
+          } catch (error) {
+            results.push({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              data: postData
+            });
+          }
+        }
+        
+        const successCount = results.filter(r => r.success).length;
+        const failureCount = results.filter(r => !r.success).length;
+        
+        res.status(201).json({ 
+          message: `Bulk blog creation completed. ${successCount} successful, ${failureCount} failed.`, 
+          results: results,
+          summary: {
+            total: req.body.length,
+            successful: successCount,
+            failed: failureCount
+          }
+        });
+      } else {
+        // Single blog post
+        blogData = {
+          title: req.body.title,
+          slug: req.body.slug,
+          excerpt: req.body.excerpt,
+          content: req.body.content,
+          category: req.body.category,
+          featuredImage: req.body.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+          author: req.body.author || "Shoreline Realty Group"
+        };
+        
+        const post = await storage.createBlogPost(blogData);
+        res.status(201).json({ 
+          message: "Blog post created successfully", 
+          post: post,
+          url: `https://shorelinestpete.com/blog/${post.slug}`
+        });
+      }
     } catch (error) {
       console.error('Blog creation error:', error);
       res.status(500).json({ message: "Failed to create blog post", error: error instanceof Error ? error.message : 'Unknown error' });
@@ -156,6 +204,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(posts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  // Bulk blog creation endpoint (for n8n automation with array of posts)
+  app.post("/api/admin/blog/bulk", validateApiKey, async (req: any, res: any) => {
+    try {
+      if (!Array.isArray(req.body)) {
+        return res.status(400).json({ message: "Request body must be an array of blog posts" });
+      }
+      
+      const results = [];
+      for (const postData of req.body) {
+        try {
+          // Validate required fields
+          if (!postData.title || !postData.slug || !postData.content) {
+            results.push({
+              success: false,
+              error: "Missing required fields: title, slug, and content are required",
+              data: postData
+            });
+            continue;
+          }
+          
+          const singleBlogData = {
+            title: postData.title,
+            slug: postData.slug,
+            excerpt: postData.excerpt || "",
+            content: postData.content,
+            category: postData.category || "General",
+            featuredImage: postData.featuredImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+            author: postData.author || "Shoreline Realty Group"
+          };
+          
+          const post = await storage.createBlogPost(singleBlogData);
+          results.push({
+            success: true,
+            post: post,
+            url: `https://shorelinestpete.com/blog/${post.slug}`
+          });
+        } catch (error) {
+          results.push({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            data: postData
+          });
+        }
+      }
+      
+      const successCount = results.filter(r => r.success).length;
+      const failureCount = results.filter(r => !r.success).length;
+      
+      res.status(201).json({ 
+        message: `Bulk blog creation completed. ${successCount} successful, ${failureCount} failed.`, 
+        results: results,
+        summary: {
+          total: req.body.length,
+          successful: successCount,
+          failed: failureCount
+        }
+      });
+    } catch (error) {
+      console.error('Bulk blog creation error:', error);
+      res.status(500).json({ message: "Failed to create blog posts", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
