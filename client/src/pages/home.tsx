@@ -34,7 +34,7 @@ export default function Home() {
       <Header />
       
       {/* Hero Section - Enhanced with video background and stronger CTAs */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
+      <section className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800">
         {/* Video Background */}
         <div className="absolute inset-0">
           <video 
@@ -43,6 +43,9 @@ export default function Home() {
             loop 
             playsInline
             className="hero-video"
+            onError={(e) => console.error('Video error:', e)}
+            onLoadStart={() => console.log('Video loading started')}
+            onCanPlay={() => console.log('Video can play')}
           >
             <source src="/135797-764361898_small.mp4" type="video/mp4" />
             Your browser does not support the video tag.
