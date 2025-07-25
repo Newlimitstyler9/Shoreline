@@ -10,7 +10,7 @@ import { Link } from "wouter";
 import { trackEvent } from "@/lib/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Mail, Clock, Users, Award, TrendingUp, Shield, Star, Zap } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Users, Award, TrendingUp, Shield, Star, Zap, Heart, Search } from "lucide-react";
 
 export default function Home() {
   const { data: featuredProperties, isLoading: propertiesLoading } = useQuery<Property[]>({
@@ -26,17 +26,30 @@ export default function Home() {
   });
 
   const handleCTAClick = (action: string) => {
-    trackEvent('cta_click', 'engagement', action);
+    trackEvent('home_cta_click', 'engagement', action);
   };
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section - Enhanced with stronger messaging */}
-      <section className="relative hero-bg py-20 md:py-32">
-        <div className="absolute inset-0 bg-cover bg-center opacity-20" 
-             style={{backgroundImage: "url('https://images.unsplash.com/photo-1551244072-5d12893278ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080')"}} />
+      {/* Hero Section - Enhanced with video background and stronger CTAs */}
+      <section className="relative hero-bg py-20 md:py-32 overflow-hidden">
+        {/* Video Background */}
+        <div className="absolute inset-0">
+          <div className="video-container">
+            <iframe 
+              src="https://www.youtube.com/embed/m4eqRoXb2ko?autoplay=1&mute=1&loop=1&playlist=m4eqRoXb2ko&controls=0&modestbranding=1&showinfo=0&rel=0&disablekb=1"
+              title="Shoreline Realty Group"
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              className="w-full h-full object-cover"
+              style={{ pointerEvents: 'none' }}
+            />
+          </div>
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        </div>
         
         <div className="container-width relative z-10">
           <div className="text-center text-white mb-12">
@@ -47,15 +60,58 @@ export default function Home() {
             <p className="text-responsive-md mb-8 text-gray-100 max-w-3xl mx-auto">
               Your Success Is Our Mission. Premier waterfront properties and exceptional service from St. Petersburg's most trusted real estate experts.
             </p>
+            
+            {/* Enhanced CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link href="/idx-search">
+                <Button 
+                  size="lg"
+                  className="bg-soft-blue text-white px-8 py-4 hover:bg-ocean-blue text-lg font-semibold"
+                  onClick={() => handleCTAClick('search_listings')}
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  Search Listings
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold"
+                  onClick={() => handleCTAClick('find_agent')}
+                >
+                  <Users className="w-5 h-5 mr-2" />
+                  Find an Agent
+                </Button>
+              </Link>
+              <Link href="/about">
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold"
+                  onClick={() => handleCTAClick('join_team')}
+                >
+                  <Award className="w-5 h-5 mr-2" />
+                  Join Our Team
+                </Button>
+              </Link>
+            </div>
           </div>
           
           <PropertySearch />
         </div>
       </section>
 
-      {/* Value Propositions Section - New */}
+      {/* Value Propositions Section - Enhanced */}
       <section className="py-16 bg-white">
         <div className="container-width">
+          <div className="text-center mb-12">
+            <h2 className="text-responsive-lg font-bold text-slate-gray mb-4">Why Choose Shoreline Realty Group?</h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Your Success Is Our Goal. We're committed to delivering exceptional results and personalized service.
+            </p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center group">
               <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -94,19 +150,27 @@ export default function Home() {
           
           {propertiesLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="space-y-4">
-                  <Skeleton className="h-64 w-full rounded-xl" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <Skeleton className="w-full h-48" />
+                  <div className="p-6">
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-4" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
                 </div>
               ))}
             </div>
-          ) : (
+          ) : featuredProperties && featuredProperties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredProperties?.map((property) => (
+              {featuredProperties.slice(0, 3).map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No featured properties available at the moment.</p>
             </div>
           )}
           
@@ -116,7 +180,8 @@ export default function Home() {
                 className="bg-soft-blue text-white px-8 py-3 hover:bg-ocean-blue text-lg"
                 onClick={() => handleCTAClick('view_all_properties')}
               >
-                Search All Listings
+                <Search className="w-5 h-5 mr-2" />
+                View All Properties
               </Button>
             </Link>
           </div>
@@ -124,7 +189,7 @@ export default function Home() {
       </section>
 
       {/* About Section - Enhanced */}
-      <section className="section-padding bg-beige">
+      <section className="section-padding bg-white">
         <div className="container-width">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -158,7 +223,7 @@ export default function Home() {
               </div>
               <Link href="/contact">
                 <Button 
-                  className="bg-slate-gray text-white px-6 py-3 hover:bg-gray-700"
+                  className="bg-soft-blue text-white px-8 py-3 hover:bg-ocean-blue text-lg"
                   onClick={() => handleCTAClick('schedule_consultation')}
                 >
                   Schedule a Consultation
@@ -188,44 +253,67 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Section - New */}
-      <section className="section-padding bg-white">
+      {/* Services Section - Enhanced */}
+      <section className="section-padding bg-gray-50">
         <div className="container-width">
           <div className="text-center mb-12">
             <h2 className="text-responsive-lg font-bold text-slate-gray mb-4">Our Services</h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Comprehensive real estate services tailored to your unique needs
+              Comprehensive real estate services tailored to your unique needs and goals
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-soft-blue hover:text-white transition-colors group">
-                             <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-white group-hover:text-soft-blue">
-                 <MapPin className="w-6 h-6" />
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center group hover:shadow-xl transition-shadow">
+                             <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                 <MapPin className="w-8 h-8 text-white" />
                </div>
-              <h3 className="font-bold mb-2">Buying</h3>
-              <p className="text-sm text-gray-600 group-hover:text-gray-200">Find your perfect home with expert guidance</p>
+              <h3 className="text-xl font-bold text-slate-gray mb-4">Buying</h3>
+              <p className="text-gray-600 mb-6">Find your perfect home with our expert guidance and local market knowledge.</p>
+              <Link href="/properties">
+                <Button variant="outline" className="w-full border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white">
+                  Start Your Search
+                </Button>
+              </Link>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-soft-blue hover:text-white transition-colors group">
-              <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-white group-hover:text-soft-blue">
-                <TrendingUp className="w-6 h-6" />
+            
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center group hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold mb-2">Selling</h3>
-              <p className="text-sm text-gray-600 group-hover:text-gray-200">Maximize your property's value and exposure</p>
+              <h3 className="text-xl font-bold text-slate-gray mb-4">Selling</h3>
+              <p className="text-gray-600 mb-6">Maximize your property's value with our proven marketing strategies.</p>
+              <Link href="/contact">
+                <Button variant="outline" className="w-full border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white">
+                  Get Free Valuation
+                </Button>
+              </Link>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-soft-blue hover:text-white transition-colors group">
-              <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-white group-hover:text-soft-blue">
-                <MapPin className="w-6 h-6" />
+            
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center group hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Shield className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold mb-2">Investment</h3>
-              <p className="text-sm text-gray-600 group-hover:text-gray-200">Build wealth through strategic real estate investments</p>
+              <h3 className="text-xl font-bold text-slate-gray mb-4">Investment</h3>
+              <p className="text-gray-600 mb-6">Build your real estate portfolio with strategic investment opportunities.</p>
+              <Link href="/contact">
+                <Button variant="outline" className="w-full border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white">
+                  Investment Consultation
+                </Button>
+              </Link>
             </div>
-            <div className="text-center p-6 rounded-xl bg-gray-50 hover:bg-soft-blue hover:text-white transition-colors group">
-              <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-white group-hover:text-soft-blue">
-                <Shield className="w-6 h-6" />
+            
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center group hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="font-bold mb-2">Consulting</h3>
-              <p className="text-sm text-gray-600 group-hover:text-gray-200">Expert advice for all your real estate decisions</p>
+              <h3 className="text-xl font-bold text-slate-gray mb-4">Consulting</h3>
+              <p className="text-gray-600 mb-6">Get expert advice on market trends, property analysis, and investment strategies.</p>
+              <Link href="/contact">
+                <Button variant="outline" className="w-full border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white">
+                  Schedule Consultation
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -308,28 +396,31 @@ export default function Home() {
                   <span className="text-gray-300">info@shorelinestpete.com</span>
                 </div>
                 <div className="flex items-center">
-                  <MapPin className="w-5 h-5 text-soft-blue mr-3" />
-                  <span className="text-gray-300">St. Petersburg, FL</span>
+                  <Clock className="w-5 h-5 text-soft-blue mr-3" />
+                  <span className="text-gray-300">Mon-Fri: 9AM-6PM | Sat: 10AM-4PM</span>
                 </div>
               </div>
             </div>
-            <div className="bg-white p-8 rounded-xl">
-              <h3 className="text-2xl font-bold text-slate-gray mb-6">Get Started Today</h3>
+            <div className="text-center lg:text-right">
               <div className="space-y-4">
                 <Link href="/contact">
                   <Button 
-                    className="w-full bg-soft-blue text-white hover:bg-ocean-blue"
-                    onClick={() => handleCTAClick('contact_form')}
+                    size="lg"
+                    className="bg-soft-blue text-white px-8 py-4 hover:bg-ocean-blue text-lg w-full lg:w-auto"
+                    onClick={() => handleCTAClick('contact_us')}
                   >
+                    <Mail className="w-5 h-5 mr-2" />
                     Contact Us
                   </Button>
                 </Link>
-                <Link href="/properties">
+                <Link href="/idx-search">
                   <Button 
-                    variant="outline" 
-                    className="w-full border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
+                    size="lg"
+                    variant="outline"
+                    className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg w-full lg:w-auto"
                     onClick={() => handleCTAClick('search_properties')}
                   >
+                    <Search className="w-5 h-5 mr-2" />
                     Search Properties
                   </Button>
                 </Link>
