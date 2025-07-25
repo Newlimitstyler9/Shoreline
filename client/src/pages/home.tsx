@@ -32,10 +32,22 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative hero-bg py-20 md:py-32">
-        <div className="absolute inset-0 bg-cover bg-center opacity-20" 
-             style={{backgroundImage: "url('https://images.unsplash.com/photo-1551244072-5d12893278ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080')"}} />
+      {/* Hero Section - Enhanced with video background */}
+      <section className="relative py-20 md:py-32 overflow-hidden">
+        {/* Video Background */}
+        <div className="absolute inset-0">
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            className="hero-video"
+          >
+            <source src="/135797-764361898_small.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="hero-video-overlay"></div>
+        </div>
         
         <div className="container-width relative z-10">
           <div className="text-center text-white mb-12">
