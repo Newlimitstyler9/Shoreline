@@ -203,7 +203,12 @@ export const requestSizeLimit = (req: Request, res: Response, next: NextFunction
 export const validateIP = (req: Request, res: Response, next: NextFunction) => {
   const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
   
-  // Block private IP ranges in production
+  // Allow blog API endpoint from private IPs (for n8n automation)
+  if (req.path === '/api/admin/blog') {
+    return next();
+  }
+  
+  // Block private IP ranges in production for other endpoints
   if (process.env.NODE_ENV === 'production') {
     const privateIPRanges = [
       /^10\./,
