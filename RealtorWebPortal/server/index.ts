@@ -35,7 +35,9 @@ app.use(helmet({
       ],
       frameSrc: [
         "'self'", 
+        "*",
         "https:",
+        "http:",
         "https://stellar.mlsmatrix.com",
         "*.mlsmatrix.com",
         "https://maps.google.com",

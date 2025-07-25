@@ -3,14 +3,16 @@ import { useLocation } from "wouter";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Home, Search, Menu } from "lucide-react";
+import { ArrowLeft, ExternalLink, Home, Search, Menu, AlertCircle, RefreshCw } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function IDXSearch() {
   const [location, setLocation] = useLocation();
-  const [idxUrl, setIdxUrl] = useState("https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx?idx=cfc86fc2");
+  const [idxUrl, setIdxUrl] = useState("https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx?idx=cfc86fc2&embed=1");
   const [searchFilters, setSearchFilters] = useState<string[]>([]);
+  const [iframeError, setIframeError] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -86,6 +88,13 @@ export default function IDXSearch() {
     }
     
     trackEvent('idx_page_view', 'property_search', 'mls_matrix_fullscreen');
+
+    // Check if iframe fails to load after 5 seconds
+    const timer = setTimeout(() => {
+      setShowFallback(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
   }, [location]);
 
   const handleBackToHome = () => {
@@ -99,6 +108,13 @@ export default function IDXSearch() {
   const handleOpenNewTab = () => {
     window.open(idxUrl, '_blank');
     trackEvent('idx_external_open', 'property_search', 'new_tab');
+  };
+
+  const handleRetryIframe = () => {
+    setIframeError(false);
+    setShowFallback(false);
+    // Force iframe reload by updating URL
+    setIdxUrl(idxUrl + (idxUrl.includes('?') ? '&' : '?') + 'reload=' + Date.now());
   };
 
   return (
@@ -232,23 +248,85 @@ export default function IDXSearch() {
         </div>
       </section>
 
-      {/* Responsive IDX iframe */}
+      {/* Responsive IDX iframe or Fallback */}
       <section className="flex-1 bg-gray-100">
-        <div className="w-full h-full">
-          <iframe 
-            src={idxUrl}
-            width="100%" 
-            height="100%" 
-            style={{ 
-              border: 'none',
-              minHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 220px)'
-            }}
-            title="MLS Matrix Property Search"
-            className="w-full h-full"
-            sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
-            referrerPolicy="no-referrer-when-downgrade"
-            allow="fullscreen"
-          />
+        <div className="w-full h-full relative">
+          {showFallback || iframeError ? (
+            // Fallback content when iframe is blocked
+            <div className="flex items-center justify-center h-full min-h-[500px] bg-white m-4 rounded-lg shadow-lg">
+              <div className="text-center max-w-md mx-auto p-8">
+                <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  MLS Search Temporarily Unavailable
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  The MLS system is currently blocking embedded access. You can still search properties directly on the MLS website.
+                </p>
+                
+                <div className="space-y-3">
+                  <Button 
+                    onClick={handleOpenNewTab}
+                    className="w-full bg-soft-blue text-white hover:bg-ocean-blue py-3"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Open MLS Search in New Window
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={handleRetryIframe}
+                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Try Loading Again
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={handleBackToHome}
+                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3"
+                  >
+                    <Home className="w-4 h-4 mr-2" />
+                    Browse Featured Properties
+                  </Button>
+                </div>
+                
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Need help?</strong> Call us at (727) 555-0123 and we'll search the MLS for you!
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Normal iframe
+            <iframe 
+              src={idxUrl}
+              width="100%" 
+              height="100%" 
+              style={{ 
+                border: 'none',
+                minHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 220px)'
+              }}
+              title="MLS Matrix Property Search"
+              className="w-full h-full"
+              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+              referrerPolicy="no-referrer-when-downgrade"
+              allow="fullscreen"
+              onError={() => setIframeError(true)}
+              onLoad={(e) => {
+                // Check if iframe content is blocked
+                try {
+                  const iframe = e.target as HTMLIFrameElement;
+                  if (iframe.contentDocument === null) {
+                    setIframeError(true);
+                  }
+                } catch (error) {
+                  setIframeError(true);
+                }
+              }}
+            />
+          )}
         </div>
       </section>
 
