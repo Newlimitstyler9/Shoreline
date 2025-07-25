@@ -19,39 +19,7 @@ validateEnvironment();
 
 // Apply Helmet for security headers
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "data:"],
-      imgSrc: ["'self'", "https:", "data:", "blob:"],
-      connectSrc: [
-        "'self'", 
-        "https:", 
-        "wss:", 
-        "https://maps.googleapis.com",
-        "https://stellar.mlsmatrix.com",
-        "*.mlsmatrix.com"
-      ],
-      frameSrc: [
-        "'self'", 
-        "*",
-        "https:",
-        "http:",
-        "https://stellar.mlsmatrix.com",
-        "*.mlsmatrix.com",
-        "https://maps.google.com",
-        "https://www.google.com"
-      ],
-      frameAncestors: ["'self'", "https:", "*.mlsmatrix.com"],
-      fontSrc: ["'self'", "https:", "data:"],
-      mediaSrc: ["'self'", "https:", "data:"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'", "https:"],
-      upgradeInsecureRequests: [],
-    },
-  },
+  contentSecurityPolicy: false, // Disable CSP temporarily to test
   crossOriginEmbedderPolicy: false,
   hsts: {
     maxAge: 31536000,
@@ -92,8 +60,8 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
   
-  // Allow iframe embedding for IDX/MLS content
-  res.header('X-Frame-Options', 'SAMEORIGIN');
+  // Allow iframe embedding for IDX/MLS content (remove X-Frame-Options to allow all iframes)
+  // res.header('X-Frame-Options', 'SAMEORIGIN');
   
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
