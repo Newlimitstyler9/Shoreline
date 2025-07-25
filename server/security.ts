@@ -167,6 +167,7 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
+    "media-src 'self'",
     "connect-src 'self' https://www.google-analytics.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
