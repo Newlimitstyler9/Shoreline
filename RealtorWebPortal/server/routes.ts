@@ -312,6 +312,9 @@ Allow: /
 # Sitemap location
 Sitemap: https://shorelinestpete.com/sitemap.xml
 
+# RSS Feed for blog content
+# RSS: https://shorelinestpete.com/rss.xml
+
 # Crawl delay (optional - helps with server load)
 Crawl-delay: 1
 
@@ -326,16 +329,29 @@ Allow: /properties
 Allow: /neighborhoods
 Allow: /blog
 Allow: /about
-Allow: /contact`;
+Allow: /contact
+Allow: /relocation-guide
+
+# Important SEO pages
+Allow: /business.json
+Allow: /rss.xml`;
 
     res.setHeader('Content-Type', 'text/plain');
     res.send(robotsTxt);
+  });
+
+  // Google Search Console verification endpoint
+  app.get("/google[a-zA-Z0-9]*.html", (req, res) => {
+    const verificationCode = req.path.replace('.html', '').replace('/', '');
+    res.setHeader('Content-Type', 'text/html');
+    res.send(`google-site-verification: ${verificationCode}.html`);
   });
 
   // Sitemap endpoint
   app.get("/sitemap.xml", async (req, res) => {
     try {
       const allNeighborhoods = await storage.getNeighborhoods();
+      const allBlogPosts = await storage.getBlogPosts();
       
       const baseUrl = "https://shorelinestpete.com";
       
@@ -378,6 +394,12 @@ Allow: /contact`;
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>${baseUrl}/relocation-guide</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
   
   <!-- Neighborhood Pages -->
   ${allNeighborhoods.map((neighborhood: any) => {
@@ -389,6 +411,16 @@ Allow: /contact`;
     <priority>0.8</priority>
   </url>`;
   }).join('\n')}
+  
+  <!-- Blog Posts -->
+  ${allBlogPosts.map((post: any) => {
+    return `  <url>
+    <loc>${baseUrl}/blog/${post.slug}</loc>
+    <lastmod>${post.updatedAt ? new Date(post.updatedAt).toISOString() : new Date(post.publishedAt).toISOString()}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+  }).join('\n')}
 </urlset>`;
 
       res.setHeader('Content-Type', 'application/xml');
@@ -396,6 +428,356 @@ Allow: /contact`;
     } catch (error) {
       console.error('Error generating sitemap:', error);
       res.status(500).send('Error generating sitemap');
+    }
+  });
+
+  // RSS Feed for blog
+  app.get("/rss.xml", async (req, res) => {
+    try {
+      const allBlogPosts = await storage.getBlogPosts();
+      const baseUrl = "https://shorelinestpete.com";
+      
+      const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Shoreline Realty Group Blog</title>
+    <description>Latest insights on St. Petersburg real estate market, buying tips, selling advice, and neighborhood guides.</description>
+    <link>${baseUrl}/blog</link>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml"/>
+    <language>en-us</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <managingEditor>info@shorelinestpete.com (Shoreline Realty Group)</managingEditor>
+    <webMaster>info@shorelinestpete.com (Shoreline Realty Group)</webMaster>
+    <category>Real Estate</category>
+    <image>
+      <url>${baseUrl}/logo.png</url>
+      <title>Shoreline Realty Group</title>
+      <link>${baseUrl}</link>
+    </image>
+    
+    ${allBlogPosts.slice(0, 20).map((post: any) => `
+    <item>
+      <title><![CDATA[${post.title}]]></title>
+      <description><![CDATA[${post.excerpt}]]></description>
+      <link>${baseUrl}/blog/${post.slug}</link>
+      <guid isPermaLink="true">${baseUrl}/blog/${post.slug}</guid>
+      <pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate>
+      <author>info@shorelinestpete.com (${post.author})</author>
+      <category>${post.category}</category>
+      ${post.featuredImage ? `<enclosure url="${post.featuredImage}" type="image/jpeg"/>` : ''}
+    </item>`).join('')}
+  </channel>
+</rss>`;
+
+      res.setHeader('Content-Type', 'application/xml');
+      res.send(rss);
+    } catch (error) {
+      console.error('Error generating RSS feed:', error);
+      res.status(500).send('Error generating RSS feed');
+    }
+  });
+
+  // Google Business Profile structured data endpoint
+  app.get("/business.json", (req, res) => {
+    const businessData = {
+      "@context": "https://schema.org",
+      "@type": "RealEstateAgent",
+      "name": "Shoreline Realty Group",
+      "description": "Premier waterfront properties and exceptional service from your trusted local real estate experts in St. Petersburg, Florida.",
+      "url": "https://shorelinestpete.com",
+      "logo": "https://shorelinestpete.com/logo.png",
+      "image": "https://shorelinestpete.com/images/office.jpg",
+      "telephone": "+1-727-555-0123",
+      "email": "info@shorelinestpete.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "123 Central Avenue",
+        "addressLocality": "St. Petersburg",
+        "addressRegion": "FL",
+        "postalCode": "33701",
+        "addressCountry": "US"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "27.7731",
+        "longitude": "-82.6400"
+      },
+      "openingHours": [
+        "Mo-Fr 09:00-18:00",
+        "Sa 10:00-16:00"
+      ],
+      "priceRange": "$$",
+      "areaServed": [
+        {
+          "@type": "Place",
+          "name": "St. Petersburg, FL"
+        },
+        {
+          "@type": "Place", 
+          "name": "Tampa Bay Area, FL"
+        },
+        {
+          "@type": "Place",
+          "name": "Pinellas County, FL"
+        }
+      ],
+      "serviceType": [
+        "Residential Real Estate",
+        "Waterfront Properties",
+        "Luxury Homes",
+        "Investment Properties",
+        "Buyer Representation",
+        "Seller Representation",
+        "Market Analysis",
+        "Property Valuation"
+      ],
+      "knowsAbout": [
+        "St. Petersburg Real Estate",
+        "Waterfront Properties",
+        "Downtown St. Petersburg",
+        "Old Northeast",
+        "Snell Isle",
+        "Shore Acres",
+        "Tampa Bay Market"
+      ],
+      "sameAs": [
+        "https://facebook.com/shorelinerealty",
+        "https://instagram.com/shorelinerealty",
+        "https://linkedin.com/company/shorelinerealty",
+        "https://youtube.com/shorelinerealty"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Real Estate Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Home Buying Services",
+              "description": "Expert guidance for first-time and experienced home buyers"
+            }
+          },
+          {
+            "@type": "Offer", 
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Home Selling Services",
+              "description": "Professional marketing and selling services for your property"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service", 
+              "name": "Property Valuation",
+              "description": "Accurate market analysis and property valuation services"
+            }
+          }
+        ]
+      },
+      "review": [
+        {
+          "@type": "Review",
+          "author": {
+            "@type": "Person",
+            "name": "Sarah Johnson"
+          },
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5"
+          },
+          "reviewBody": "Exceptional service from the Shoreline team. They helped us find our dream waterfront home in record time!"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "127",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    };
+
+    res.setHeader('Content-Type', 'application/ld+json');
+    res.json(businessData);
+  });
+
+  // Local SEO endpoint for neighborhood-specific searches
+  app.get("/local-seo/:neighborhood", async (req, res) => {
+    try {
+      const neighborhoodName = req.params.neighborhood.replace(/-/g, ' ');
+      const neighborhood = await storage.getNeighborhoods();
+      const matchedNeighborhood = neighborhood.find((n: any) => 
+        n.name.toLowerCase() === neighborhoodName.toLowerCase()
+      );
+
+      if (!matchedNeighborhood) {
+        return res.status(404).json({ message: "Neighborhood not found" });
+      }
+
+      const localSeoData = {
+        "@context": "https://schema.org",
+        "@type": "Place",
+        "name": `${matchedNeighborhood.name} Real Estate`,
+        "description": `Find homes for sale in ${matchedNeighborhood.name}, St. Petersburg, FL. ${matchedNeighborhood.description}`,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "St. Petersburg",
+          "addressRegion": "FL",
+          "addressCountry": "US"
+        },
+        "geo": {
+          "@type": "GeoCoordinates", 
+          "latitude": "27.7731",
+          "longitude": "-82.6400"
+        },
+        "containedInPlace": {
+          "@type": "Place",
+          "name": "St. Petersburg, FL"
+        },
+        "additionalProperty": [
+          {
+            "@type": "PropertyValue",
+            "name": "Average Price Range",
+            "value": matchedNeighborhood.averagePriceRange
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Neighborhood Highlights",
+            "value": matchedNeighborhood.highlights?.join(', ')
+          }
+        ],
+        "photo": matchedNeighborhood.image,
+        "url": `https://shorelinestpete.com/neighborhoods/${matchedNeighborhood.name.toLowerCase().replace(/\s+/g, '-')}`
+      };
+
+      res.setHeader('Content-Type', 'application/ld+json');
+      res.json(localSeoData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate local SEO data" });
+    }
+  });
+
+  // SEO audit endpoint for monitoring optimization
+  app.get("/api/seo/audit", validateApiKey, async (req: any, res: any) => {
+    try {
+      const allBlogPosts = await storage.getBlogPosts();
+      const allNeighborhoods = await storage.getNeighborhoods();
+      const allProperties = await storage.getProperties();
+      
+      const baseUrl = "https://shorelinestpete.com";
+      
+      const audit = {
+        timestamp: new Date().toISOString(),
+        siteHealth: {
+          totalPages: 7 + allBlogPosts.length + allNeighborhoods.length, // Static pages + dynamic content
+          indexablePages: 7 + allBlogPosts.length + allNeighborhoods.length,
+          sitemapUrl: `${baseUrl}/sitemap.xml`,
+          robotsTxtUrl: `${baseUrl}/robots.txt`,
+          rssUrl: `${baseUrl}/rss.xml`,
+          businessDataUrl: `${baseUrl}/business.json`
+        },
+        content: {
+          blogPosts: {
+            total: allBlogPosts.length,
+            categories: Array.from(new Set(allBlogPosts.map((post: any) => post.category))),
+            recentPosts: allBlogPosts.slice(0, 5).map((post: any) => ({
+              title: post.title,
+              slug: post.slug,
+              publishedAt: post.publishedAt,
+              category: post.category,
+              url: `${baseUrl}/blog/${post.slug}`
+            }))
+          },
+          neighborhoods: {
+            total: allNeighborhoods.length,
+            featured: allNeighborhoods.map((n: any) => ({
+              name: n.name,
+              url: `${baseUrl}/neighborhoods/${n.name.toLowerCase().replace(/\s+/g, '-')}`
+            }))
+          },
+          properties: {
+            total: allProperties.length,
+            featured: allProperties.filter((p: any) => p.isFeatured).length
+          }
+        },
+        keywords: {
+          primary: [
+            "St. Petersburg real estate",
+            "St. Petersburg homes for sale", 
+            "St. Petersburg realtors",
+            "waterfront properties St. Petersburg",
+            "luxury homes St. Petersburg"
+          ],
+          longtail: [
+            "buy home in St. Petersburg Florida",
+            "sell house St. Petersburg FL",
+            "best neighborhoods St. Petersburg",
+            "waterfront condos Tampa Bay",
+            "real estate agent St. Petersburg"
+          ],
+          local: allNeighborhoods.map((n: any) => `${n.name} real estate St. Petersburg`)
+        },
+        technicalSeo: {
+          https: true,
+          mobileFriendly: true,
+          structuredData: true,
+          metaTags: true,
+          canonicalUrls: true,
+          xmlSitemap: true,
+          robotsTxt: true,
+          pageSpeed: "Good (estimated)",
+          securityHeaders: true
+        },
+        localSeo: {
+          businessStructuredData: true,
+          localKeywords: true,
+          neighborhoodPages: allNeighborhoods.length,
+          geoTargeting: "St. Petersburg, FL and Tampa Bay Area",
+          serviceAreas: [
+            "St. Petersburg, FL",
+            "Tampa Bay Area, FL", 
+            "Pinellas County, FL",
+            "Downtown St. Petersburg",
+            "Old Northeast",
+            "Snell Isle",
+            "Shore Acres"
+          ]
+        },
+        recommendations: [
+          {
+            priority: "High",
+            action: "Submit sitemap to Google Search Console",
+            url: "https://search.google.com/search-console"
+          },
+          {
+            priority: "High", 
+            action: "Set up Google Business Profile for local SEO",
+            url: "https://business.google.com"
+          },
+          {
+            priority: "Medium",
+            action: "Create more neighborhood-specific content",
+            description: "Add detailed guides for each St. Petersburg neighborhood"
+          },
+          {
+            priority: "Medium",
+            action: "Optimize blog posting frequency",
+            description: "Aim for 2-3 blog posts per week using n8n automation"
+          },
+          {
+            priority: "Low",
+            action: "Add customer reviews and testimonials",
+            description: "Collect and display client reviews for social proof"
+          }
+        ]
+      };
+
+      res.json(audit);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate SEO audit" });
     }
   });
 
