@@ -12,6 +12,7 @@ export default function Header() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const isMobile = useIsMobile();
   
   const handleCTAClick = () => {
@@ -117,13 +118,13 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className={`font-medium transition-colors flex items-center space-x-1 ${
+                  className={`font-medium transition-colors flex items-center space-x-1 p-0 h-auto ${
                     location.includes('/buyers') || location.includes('/sellers') || location.includes('/mortgage') || location.includes('/valuation')
                       ? "text-soft-blue" 
                       : "text-slate-gray hover:text-soft-blue"
                   }`}
                 >
-                  <span>{buyersSellersMenu.name}</span>
+                  <span className="font-medium">{buyersSellersMenu.name}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </DropdownMenuTrigger>
@@ -239,34 +240,47 @@ export default function Header() {
                         ))}
                       </nav>
                       
-                      {/* Mobile Buyers & Sellers Section */}
+                      {/* Mobile Buyers & Sellers Dropdown */}
                       <div className="pt-4 border-t border-gray-200">
-                        <h3 className="text-sm font-semibold text-slate-gray mb-4 uppercase tracking-wide">
-                          {buyersSellersMenu.name}
-                        </h3>
-                        {buyersSellersMenu.items.map((section, sectionIndex) => (
-                          <div key={sectionIndex} className="mb-6">
-                            <h4 className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide px-1">
-                              {section.title}
-                            </h4>
-                            <div className="space-y-1">
-                              {section.items.map((item, itemIndex) => {
-                                const IconComponent = item.icon;
-                                return (
-                                  <Link key={itemIndex} href={item.href}>
-                                    <div 
-                                      className="flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors cursor-pointer text-slate-gray hover:bg-gray-100"
-                                      onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                      <IconComponent className="w-4 h-4 text-soft-blue flex-shrink-0" />
-                                      <span className="text-sm">{item.name}</span>
-                                    </div>
-                                  </Link>
-                                );
-                              })}
-                            </div>
+                        <button
+                          onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
+                          className={`w-full flex items-center justify-between py-3 px-4 rounded-lg transition-colors cursor-pointer ${
+                            location.includes('/buyers') || location.includes('/sellers') || location.includes('/mortgage') || location.includes('/valuation')
+                              ? "bg-soft-blue text-white" 
+                              : "text-slate-gray hover:bg-gray-100"
+                          }`}
+                        >
+                          <span className="font-medium">{buyersSellersMenu.name}</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {mobileDropdownOpen && (
+                          <div className="mt-2 space-y-4">
+                            {buyersSellersMenu.items.map((section, sectionIndex) => (
+                              <div key={sectionIndex} className="ml-4">
+                                <h4 className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide px-1">
+                                  {section.title}
+                                </h4>
+                                <div className="space-y-1">
+                                  {section.items.map((item, itemIndex) => {
+                                    const IconComponent = item.icon;
+                                    return (
+                                      <Link key={itemIndex} href={item.href}>
+                                        <div 
+                                          className="flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors cursor-pointer text-slate-gray hover:bg-gray-100"
+                                          onClick={() => setMobileMenuOpen(false)}
+                                        >
+                                          <IconComponent className="w-4 h-4 text-soft-blue flex-shrink-0" />
+                                          <span className="text-sm">{item.name}</span>
+                                        </div>
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
                   </div>
