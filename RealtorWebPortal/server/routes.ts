@@ -781,6 +781,158 @@ Allow: /rss.xml`;
     }
   });
 
+  // Google Reviews endpoints
+  app.get("/api/google-reviews", async (req, res) => {
+    try {
+      // Get Google API key from environment
+      const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+      const placeId = process.env.GOOGLE_PLACE_ID;
+
+      if (!googleApiKey || !placeId) {
+        return res.status(400).json({ 
+          message: "Google API configuration missing",
+          fallback: true 
+        });
+      }
+
+      // Fetch reviews from Google Places API
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&key=${googleApiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Google API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.result) {
+        res.json({
+          success: true,
+          reviews: data.result.reviews || [],
+          rating: data.result.rating || 0,
+          totalReviews: data.result.user_ratings_total || 0,
+          source: 'google_api'
+        });
+      } else {
+        throw new Error(`Google API returned status: ${data.status}`);
+      }
+    } catch (error) {
+      console.error('Google Reviews API error:', error);
+      
+      // Return fallback response
+      res.json({
+        success: false,
+        message: "Unable to fetch live reviews",
+        fallback: true,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Endpoint to update Google API configuration (admin only)
+  app.post("/api/admin/google-config", validateApiKey, async (req: any, res: any) => {
+    try {
+      const { placeId, apiKey } = req.body;
+
+      if (!placeId || !apiKey) {
+        return res.status(400).json({ 
+          message: "Missing placeId or apiKey" 
+        });
+      }
+
+      // Test the API configuration
+      const testResponse = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating&key=${apiKey}`
+      );
+
+      const testData = await testResponse.json();
+
+      if (testData.status === 'OK') {
+        res.json({
+          success: true,
+          message: "Google API configuration is valid",
+          businessName: testData.result?.name,
+          rating: testData.result?.rating,
+          instructions: {
+            step1: "Add GOOGLE_PLACES_API_KEY to your environment variables",
+            step2: "Add GOOGLE_PLACE_ID to your environment variables",
+            step3: "Restart your server to apply changes",
+            placeId: placeId,
+            note: "Store these securely in your environment variables, not in code"
+          }
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "Invalid Google API configuration",
+          error: testData.error_message || testData.status
+        });
+      }
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to test Google API configuration",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get Google Business Profile information
+  app.get("/api/google-business-info", async (req, res) => {
+    try {
+      const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+      const placeId = process.env.GOOGLE_PLACE_ID;
+
+      if (!googleApiKey || !placeId) {
+        return res.json({
+          name: "Shoreline Realty Group",
+          address: "123 Beach Drive NE, St. Petersburg, FL 33701",
+          phone: "(727) 555-0123",
+          rating: 5.0,
+          totalReviews: 127,
+          website: "https://shorelinestpete.com",
+          googleMapsUrl: "https://www.google.com/maps/place/Shoreline+Realty+Group",
+          source: 'fallback'
+        });
+      }
+
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,formatted_phone_number,rating,user_ratings_total,website,url&key=${googleApiKey}`
+      );
+
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.result) {
+        res.json({
+          name: data.result.name,
+          address: data.result.formatted_address,
+          phone: data.result.formatted_phone_number,
+          rating: data.result.rating,
+          totalReviews: data.result.user_ratings_total,
+          website: data.result.website,
+          googleMapsUrl: data.result.url,
+          source: 'google_api'
+        });
+      } else {
+        throw new Error('Unable to fetch business info');
+      }
+    } catch (error) {
+      console.error('Google Business Info error:', error);
+      
+      // Fallback business info
+      res.json({
+        name: "Shoreline Realty Group",
+        address: "123 Beach Drive NE, St. Petersburg, FL 33701",
+        phone: "(727) 555-0123",
+        rating: 5.0,
+        totalReviews: 127,
+        website: "https://shorelinestpete.com",
+        googleMapsUrl: "https://www.google.com/maps/place/Shoreline+Realty+Group",
+        source: 'fallback'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
