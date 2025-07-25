@@ -6,9 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PropertySearch() {
   const [, setLocation] = useLocation();
+  const isMobile = useIsMobile();
   const [searchData, setSearchData] = useState({
     location: "",
     propertyType: "all",
@@ -16,8 +18,8 @@ export default function PropertySearch() {
     bedrooms: "all"
   });
 
-  const handleInputChange = (field: string, value: string) => {
-    setSearchData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (key: string, value: string) => {
+    setSearchData(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -74,43 +76,43 @@ export default function PropertySearch() {
       idxParams.append('city', searchData.location.trim());
     }
     
-    // Navigate to properties page with IDX integration
+    // Navigate to properties page (now IDX search) with parameters
     const queryString = idxParams.toString();
     setLocation(`/properties${queryString ? `?${queryString}` : ''}`);
   };
 
   return (
     <Card className="bg-white rounded-2xl shadow-2xl max-w-4xl mx-auto">
-      <CardContent className="p-6 md:p-8">
-        <h3 className="text-slate-gray text-xl font-semibold mb-6 text-center">
+      <CardContent className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
+        <h3 className={`text-slate-gray font-semibold mb-6 text-center ${isMobile ? 'text-lg' : 'text-xl'}`}>
           Find Your Perfect Property
         </h3>
         
-        <form onSubmit={handleSearch} className="space-y-4 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
+        <form onSubmit={handleSearch} className={`space-y-4 ${!isMobile && 'md:space-y-0 md:grid md:grid-cols-4 md:gap-4'}`}>
           {/* Location */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className={`block text-gray-700 font-medium mb-2 ${isMobile ? 'text-sm' : 'text-sm'}`}>
               Location
             </label>
             <Input
               type="text"
-              placeholder="St. Petersburg, FL"
+              placeholder={isMobile ? "St. Pete, FL" : "St. Petersburg, FL"}
               value={searchData.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
-              className="focus:ring-2 focus:ring-soft-blue focus:border-soft-blue"
+              className={`focus:ring-2 focus:ring-soft-blue focus:border-soft-blue ${isMobile ? 'h-11' : ''}`}
             />
           </div>
           
           {/* Property Type */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className={`block text-gray-700 font-medium mb-2 ${isMobile ? 'text-sm' : 'text-sm'}`}>
               Property Type
             </label>
             <Select 
               value={searchData.propertyType} 
               onValueChange={(value) => handleInputChange('propertyType', value)}
             >
-              <SelectTrigger className="focus:ring-2 focus:ring-soft-blue focus:border-soft-blue">
+              <SelectTrigger className={`focus:ring-2 focus:ring-soft-blue focus:border-soft-blue ${isMobile ? 'h-11' : ''}`}>
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -124,58 +126,62 @@ export default function PropertySearch() {
           
           {/* Price Range */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className={`block text-gray-700 font-medium mb-2 ${isMobile ? 'text-sm' : 'text-sm'}`}>
               Price Range
             </label>
             <Select 
               value={searchData.priceRange} 
               onValueChange={(value) => handleInputChange('priceRange', value)}
             >
-              <SelectTrigger className="focus:ring-2 focus:ring-soft-blue focus:border-soft-blue">
+              <SelectTrigger className={`focus:ring-2 focus:ring-soft-blue focus:border-soft-blue ${isMobile ? 'h-11' : ''}`}>
                 <SelectValue placeholder="Any Price" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Any Price</SelectItem>
-                <SelectItem value="200K-400K">$200K - $400K</SelectItem>
-                <SelectItem value="400K-600K">$400K - $600K</SelectItem>
-                <SelectItem value="600K-800K">$600K - $800K</SelectItem>
-                <SelectItem value="800K-1200K">$800K - $1.2M</SelectItem>
-                <SelectItem value="1200K-any">$1.2M+</SelectItem>
+                <SelectItem value="0-300K">Under $300K</SelectItem>
+                <SelectItem value="300K-500K">$300K - $500K</SelectItem>
+                <SelectItem value="500K-750K">$500K - $750K</SelectItem>
+                <SelectItem value="750K-1M">$750K - $1M</SelectItem>
+                <SelectItem value="1M-any">$1M+</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           {/* Bedrooms */}
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label className={`block text-gray-700 font-medium mb-2 ${isMobile ? 'text-sm' : 'text-sm'}`}>
               Bedrooms
             </label>
             <Select 
               value={searchData.bedrooms} 
               onValueChange={(value) => handleInputChange('bedrooms', value)}
             >
-              <SelectTrigger className="focus:ring-2 focus:ring-soft-blue focus:border-soft-blue">
+              <SelectTrigger className={`focus:ring-2 focus:ring-soft-blue focus:border-soft-blue ${isMobile ? 'h-11' : ''}`}>
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Any</SelectItem>
-                <SelectItem value="1">1+ Bedroom</SelectItem>
-                <SelectItem value="2">2+ Bedrooms</SelectItem>
-                <SelectItem value="3">3+ Bedrooms</SelectItem>
-                <SelectItem value="4">4+ Bedrooms</SelectItem>
-                <SelectItem value="5">5+ Bedrooms</SelectItem>
+                <SelectItem value="1">1+ Bed</SelectItem>
+                <SelectItem value="2">2+ Beds</SelectItem>
+                <SelectItem value="3">3+ Beds</SelectItem>
+                <SelectItem value="4">4+ Beds</SelectItem>
+                <SelectItem value="5">5+ Beds</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          {/* Search Button - Full Width on Mobile */}
-          <div className="md:col-span-4 md:flex md:justify-center md:mt-6">
+          {/* Search Button */}
+          <div className={`${!isMobile && 'md:col-span-4 md:flex md:justify-center md:mt-6'} ${isMobile && 'mt-6'}`}>
             <Button 
               type="submit" 
-              className="w-full md:w-auto bg-soft-blue text-white py-3 px-8 hover:bg-ocean-blue font-medium flex items-center justify-center"
+              className={`w-full bg-soft-blue text-white hover:bg-ocean-blue font-medium flex items-center justify-center ${
+                isMobile 
+                  ? 'py-3 px-6 text-base h-12' 
+                  : 'md:w-auto py-3 px-8'
+              }`}
             >
-              <Search className="w-5 h-5 mr-2" />
-              Search Properties
+              <Search className={`mr-2 ${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} />
+              {isMobile ? 'Search Properties' : 'Search Properties'}
             </Button>
           </div>
         </form>

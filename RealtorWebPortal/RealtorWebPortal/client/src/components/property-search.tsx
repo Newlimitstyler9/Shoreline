@@ -28,57 +28,62 @@ export default function PropertySearch() {
     // Track the search event
     trackEvent('property_search', 'search', 'hero_form');
     
-    // Build IDX parameters for your MLS Matrix system
+    // Build IDX parameters for MLS Matrix system with correct field names
     const idxParams = new URLSearchParams();
     
     // Set base IDX parameters
-    idxParams.append('idx', 'cfc86fc2');
+    idxParams.append('idx', 'cfc86fc2'); // Your IDX ID
+    idxParams.append('embed', 'true'); // For iframe embedding
     
-    // Map property type to IDX categories
+    // Map property type to correct MLS Matrix PropertyType field
     if (searchData.propertyType && searchData.propertyType !== 'all') {
-      let propertyClass = '';
+      let propertyType = '';
       switch (searchData.propertyType) {
         case 'house':
-          propertyClass = 'SFR'; // Single Family Residential
+          propertyType = 'Single Family Detached,Single Family Attached'; 
           break;
         case 'condo':
-          propertyClass = 'CON'; // Condominium
+          propertyType = 'Condominium,Townhouse'; 
           break;
         case 'townhouse':
-          propertyClass = 'TWH'; // Townhouse
+          propertyType = 'Townhouse'; 
           break;
         default:
-          propertyClass = 'SFR';
+          propertyType = 'Single Family Detached';
       }
-      idxParams.append('property_class', propertyClass);
+      idxParams.append('PropertyType', propertyType);
     }
     
-    // Map price range to IDX min/max price
+    // Map price range to correct MLS Matrix ListPrice fields
     if (searchData.priceRange && searchData.priceRange !== 'all') {
       const [min, max] = searchData.priceRange.split('-');
       if (min && min !== 'any') {
         const minPrice = min.replace('K', '000').replace('M', '000000');
-        idxParams.append('min_price', minPrice);
+        idxParams.append('ListPriceMin', minPrice);
       }
       if (max && max !== 'any') {
         const maxPrice = max.replace('K', '000').replace('M', '000000');
-        idxParams.append('max_price', maxPrice);
+        idxParams.append('ListPriceMax', maxPrice);
       }
     }
     
-    // Map bedrooms to IDX
+    // Map bedrooms to correct MLS Matrix BedroomsTotal field
     if (searchData.bedrooms && searchData.bedrooms !== 'all') {
-      idxParams.append('min_bedrooms', searchData.bedrooms);
+      idxParams.append('BedroomsMin', searchData.bedrooms);
     }
     
-    // Add location if provided
+    // Add location to correct MLS Matrix City field
     if (searchData.location.trim()) {
-      idxParams.append('city', searchData.location.trim());
+      idxParams.append('City', searchData.location.trim());
     }
     
-    // Navigate to properties page (now IDX search) with parameters
+    // Additional common search parameters for better filtering
+    idxParams.append('Status', 'Active'); // Only show active listings
+    idxParams.append('count', '20'); // Results per page
+    
+    // Navigate to IDX search page with parameters
     const queryString = idxParams.toString();
-    setLocation(`/properties${queryString ? `?${queryString}` : ''}`);
+    setLocation(`/idx-search${queryString ? `?${queryString}` : ''}`);
   };
 
   return (

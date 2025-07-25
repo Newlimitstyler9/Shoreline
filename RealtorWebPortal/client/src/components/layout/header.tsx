@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Home, X } from "lucide-react";
+import { Menu, X, Phone, Mail } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { useIsMobile } from "@/hooks/use-mobile";
 import logo1 from "@assets/ChatGPT Image Jul 22, 2025, 07_33_29 PM_1753231947309.png";
@@ -33,6 +33,26 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
+      {/* Contact Info Bar - Desktop */}
+      <div className="hidden lg:block bg-gray-50 border-b">
+        <div className="container-width py-2">
+          <div className="flex justify-end space-x-6 text-sm">
+            <div className="flex items-center">
+              <Phone className="w-4 h-4 text-soft-blue mr-2" />
+              <a href="tel:7275550123" className="text-gray-700 hover:text-soft-blue">
+                (727) 555-0123
+              </a>
+            </div>
+            <div className="flex items-center">
+              <Mail className="w-4 h-4 text-soft-blue mr-2" />
+              <a href="/contact" className="text-gray-700 hover:text-soft-blue">
+                Email Us
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <nav className={`container-width ${isMobile ? 'py-3' : 'py-4'}`}>
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -98,21 +118,47 @@ export default function Header() {
                         className="w-8 h-8"
                       />
                       <div>
-                        <h2 className="text-slate-gray font-bold text-base">SHORELINE</h2>
+                        <h2 className="text-slate-gray font-bold text-sm">SHORELINE</h2>
                         <p className="text-gray-600 text-xs">REALTY GROUP</p>
                       </div>
                     </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="p-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
                   </div>
-                  
+
+                  {/* Mobile Contact Info */}
+                  <div className="p-4 bg-gray-50 border-b">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 text-soft-blue mr-2" />
+                        <a href="tel:7275550123" className="text-gray-700">
+                          (727) 555-0123
+                        </a>
+                      </div>
+                      <div className="flex items-center">
+                        <Mail className="w-4 h-4 text-soft-blue mr-2" />
+                        <a href="/contact" className="text-gray-700">
+                          Email Us
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Mobile Navigation */}
-                  <div className="flex-1 py-4">
-                    <div className="space-y-1 px-4">
+                  <div className="flex-1 p-4">
+                    <nav className="space-y-4">
                       {navigation.map((item) => (
                         <Link key={item.href} href={item.href}>
                           <div 
-                            className={`block py-3 px-4 rounded-lg font-medium transition-colors ${
-                              isActive(item.href)
-                                ? "bg-soft-blue text-white"
+                            className={`block py-2 px-3 rounded-lg transition-colors cursor-pointer ${
+                              isActive(item.href) 
+                                ? "bg-soft-blue text-white" 
                                 : "text-slate-gray hover:bg-gray-100"
                             }`}
                             onClick={() => setMobileMenuOpen(false)}
@@ -121,14 +167,14 @@ export default function Header() {
                           </div>
                         </Link>
                       ))}
-                    </div>
+                    </nav>
                   </div>
-                  
+
                   {/* Mobile CTA */}
                   <div className="p-4 border-t">
                     <Link href="/contact">
                       <Button 
-                        className="w-full bg-soft-blue text-white hover:bg-ocean-blue font-medium py-3"
+                        className="w-full bg-soft-blue text-white hover:bg-ocean-blue"
                         onClick={() => {
                           handleCTAClick();
                           setMobileMenuOpen(false);

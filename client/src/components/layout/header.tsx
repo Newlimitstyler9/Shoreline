@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, Phone, Mail } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu, X, Phone, Mail, ChevronDown, Home, DollarSign, FileText, Calculator, Users, Award } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { useIsMobile } from "@/hooks/use-mobile";
 import logo1 from "@assets/ChatGPT Image Jul 22, 2025, 07_33_29 PM_1753231947309.png";
@@ -24,6 +25,30 @@ export default function Header() {
     { name: "Blog", href: "/blog" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const buyersSellersMenu = {
+    name: "Buyers & Sellers",
+    items: [
+      {
+        title: "For Buyers",
+        items: [
+          { name: "Buyer's Guide", href: "/buyers-guide", icon: Home },
+          { name: "Mortgage Calculator", href: "/mortgage-calculator", icon: Calculator },
+          { name: "First-Time Buyers", href: "/first-time-buyers", icon: Users },
+          { name: "Investment Properties", href: "/investment-properties", icon: DollarSign },
+        ]
+      },
+      {
+        title: "For Sellers",
+        items: [
+          { name: "Seller's Guide", href: "/sellers-guide", icon: FileText },
+          { name: "Home Valuation", href: "/home-valuation", icon: Calculator },
+          { name: "Selling Process", href: "/selling-process", icon: Award },
+          { name: "Market Analysis", href: "/market-analysis", icon: DollarSign },
+        ]
+      }
+    ]
+  };
 
   const isActive = (href: string) => {
     if (href === "/" && location === "/") return true;
@@ -85,6 +110,47 @@ export default function Header() {
                 </span>
               </Link>
             ))}
+            
+            {/* Buyers & Sellers Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className={`font-medium transition-colors flex items-center space-x-1 ${
+                    location.includes('/buyers') || location.includes('/sellers') || location.includes('/mortgage') || location.includes('/valuation')
+                      ? "text-soft-blue" 
+                      : "text-slate-gray hover:text-soft-blue"
+                  }`}
+                >
+                  <span>{buyersSellersMenu.name}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-80 p-4">
+                <div className="grid grid-cols-2 gap-6">
+                  {buyersSellersMenu.items.map((section, sectionIndex) => (
+                    <div key={sectionIndex}>
+                      <h3 className="font-semibold text-slate-gray mb-3 text-sm uppercase tracking-wide">
+                        {section.title}
+                      </h3>
+                      <div className="space-y-2">
+                        {section.items.map((item, itemIndex) => {
+                          const IconComponent = item.icon;
+                          return (
+                            <Link key={itemIndex} href={item.href}>
+                              <DropdownMenuItem className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <IconComponent className="w-4 h-4 text-soft-blue" />
+                                <span className="text-sm text-slate-gray">{item.name}</span>
+                              </DropdownMenuItem>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           {/* CTA Button - Desktop */}
@@ -167,6 +233,36 @@ export default function Header() {
                           </div>
                         </Link>
                       ))}
+                      
+                      {/* Mobile Buyers & Sellers Section */}
+                      <div className="pt-4 border-t">
+                        <h3 className="text-sm font-semibold text-slate-gray mb-3 uppercase tracking-wide">
+                          {buyersSellersMenu.name}
+                        </h3>
+                        {buyersSellersMenu.items.map((section, sectionIndex) => (
+                          <div key={sectionIndex} className="mb-4">
+                            <h4 className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                              {section.title}
+                            </h4>
+                            <div className="space-y-1 ml-2">
+                              {section.items.map((item, itemIndex) => {
+                                const IconComponent = item.icon;
+                                return (
+                                  <Link key={itemIndex} href={item.href}>
+                                    <div 
+                                      className="flex items-center space-x-2 py-2 px-3 rounded-lg transition-colors cursor-pointer text-slate-gray hover:bg-gray-100"
+                                      onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                      <IconComponent className="w-4 h-4 text-soft-blue" />
+                                      <span className="text-sm">{item.name}</span>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </nav>
                   </div>
 

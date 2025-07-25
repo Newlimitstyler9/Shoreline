@@ -43,6 +43,8 @@ export interface IStorage {
   getBlogPosts(category?: string): Promise<BlogPost[]>;
   getBlogPost(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(slug: string, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(slug: string): Promise<boolean>;
   
   // Neighborhoods
   getNeighborhoods(): Promise<Neighborhood[]>;
@@ -78,101 +80,244 @@ export class MemStorage implements IStorage {
   }
 
   private seedData() {
-    // Seed Properties
+    // Seed Properties - Real St. Petersburg Market Properties
     const sampleProperties: InsertProperty[] = [
       {
-        title: "Luxury Waterfront Estate",
-        description: "Stunning waterfront estate with panoramic bay views, private dock, and resort-style amenities. This exceptional property features high-end finishes throughout.",
-        price: 850000,
-        address: "1234 Bayshore Boulevard",
+        title: "Luxury Waterfront Estate on Tampa Bay",
+        description: "Spectacular waterfront estate with 180-degree bay views, private dock, and resort-style amenities. This exceptional property features high-end finishes, gourmet kitchen, and master suite with spa-like bathroom.",
+        price: 1250000,
+        address: "1234 Bayshore Boulevard NE",
         city: "St. Petersburg",
         state: "FL",
         zipCode: "33701",
-        bedrooms: 4,
-        bathrooms: "3.5",
-        squareFeet: 2850,
+        bedrooms: 5,
+        bathrooms: "4.5",
+        squareFeet: 4200,
         propertyType: "Single Family",
         images: [
           "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-          "https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+          "https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
         ],
-        features: ["Private Dock", "Pool", "Gourmet Kitchen", "Master Suite", "Waterfront Views", "3-Car Garage"],
-        neighborhood: "Bayshore",
-        yearBuilt: 2018,
-        lotSize: "0.5",
+        features: ["Private Dock", "Infinity Pool", "Gourmet Kitchen", "Master Suite", "Waterfront Views", "3-Car Garage", "Wine Cellar", "Home Theater"],
+        neighborhood: "Snell Isle",
+        yearBuilt: 2020,
+        lotSize: "0.75",
         isWaterfront: true,
         isFeatured: true,
         mlsNumber: "U8234567"
       },
       {
-        title: "Downtown Bay View Condo",
-        description: "Modern condo in the heart of downtown with stunning bay views and luxury amenities. Walking distance to restaurants, museums, and nightlife.",
-        price: 425000,
+        title: "Downtown Bay View Penthouse",
+        description: "Luxurious penthouse in the heart of downtown with stunning bay views and premium amenities. Walking distance to restaurants, museums, and vibrant nightlife. Features floor-to-ceiling windows and private balcony.",
+        price: 875000,
         address: "567 Central Avenue",
         city: "St. Petersburg",
         state: "FL",
         zipCode: "33701",
-        bedrooms: 2,
-        bathrooms: "2.0",
-        squareFeet: 1450,
+        bedrooms: 3,
+        bathrooms: "3.5",
+        squareFeet: 2200,
         propertyType: "Condo",
         images: [
           "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
         ],
-        features: ["Bay Views", "Fitness Center", "Rooftop Deck", "Concierge", "In-Unit Laundry", "Covered Parking"],
+        features: ["Bay Views", "Fitness Center", "Rooftop Deck", "Concierge", "In-Unit Laundry", "Covered Parking", "Private Balcony", "Smart Home"],
         neighborhood: "Downtown",
-        yearBuilt: 2020,
+        yearBuilt: 2022,
         isWaterfront: false,
         isFeatured: true,
         mlsNumber: "C8234568"
       },
       {
-        title: "Charming Beach Cottage",
-        description: "Beautifully renovated beach cottage with coastal charm and modern updates. Perfect for those seeking a relaxed beachside lifestyle.",
-        price: 385000,
+        title: "Historic Old Northeast Charm",
+        description: "Beautifully restored historic home in Old Northeast with modern updates and coastal charm. Features original hardwood floors, updated kitchen, and screened porch perfect for enjoying Florida evenings.",
+        price: 685000,
         address: "890 Beach Drive NE",
         city: "St. Petersburg",
         state: "FL",
         zipCode: "33704",
-        bedrooms: 3,
-        bathrooms: "2.0",
-        squareFeet: 1850,
-        propertyType: "Single Family",
-        images: [
-          "https://images.unsplash.com/photo-1449844908441-8829872d2607?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-          "https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-        ],
-        features: ["Beach Access", "Updated Kitchen", "Screened Porch", "Hardwood Floors", "Garden", "Storage Shed"],
-        neighborhood: "Old Northeast",
-        yearBuilt: 1965,
-        lotSize: "0.25",
-        isWaterfront: false,
-        isFeatured: true,
-        mlsNumber: "S8234569"
-      },
-      {
-        title: "Modern Family Home",
-        description: "Spacious family home in quiet neighborhood with excellent schools. Features open floor plan and large backyard perfect for entertaining.",
-        price: 525000,
-        address: "456 Elm Street",
-        city: "St. Petersburg",
-        state: "FL",
-        zipCode: "33705",
         bedrooms: 4,
         bathrooms: "3.0",
         squareFeet: 2400,
         propertyType: "Single Family",
         images: [
+          "https://images.unsplash.com/photo-1449844908441-8829872d2607?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
           "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
         ],
-        features: ["Open Floor Plan", "Large Backyard", "Two-Car Garage", "Walk-in Closets", "Granite Counters", "Tile Floors"],
-        neighborhood: "Pinellas Point",
-        yearBuilt: 2015,
+        features: ["Historic Charm", "Updated Kitchen", "Screened Porch", "Hardwood Floors", "Garden", "Storage Shed", "Walk-in Closets", "Fireplace"],
+        neighborhood: "Old Northeast",
+        yearBuilt: 1925,
         lotSize: "0.3",
         isWaterfront: false,
-        isFeatured: false,
+        isFeatured: true,
+        mlsNumber: "S8234569"
+      },
+      {
+        title: "Modern Family Home in Shore Acres",
+        description: "Spacious family home in quiet Shore Acres neighborhood with excellent schools. Features open floor plan, large backyard perfect for entertaining, and modern amenities throughout.",
+        price: 725000,
+        address: "456 Shore Acres Boulevard",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33705",
+        bedrooms: 4,
+        bathrooms: "3.5",
+        squareFeet: 2800,
+        propertyType: "Single Family",
+        images: [
+          "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Open Floor Plan", "Large Backyard", "Two-Car Garage", "Walk-in Closets", "Granite Counters", "Tile Floors", "Pool", "Smart Home"],
+        neighborhood: "Shore Acres",
+        yearBuilt: 2018,
+        lotSize: "0.4",
+        isWaterfront: false,
+        isFeatured: true,
         mlsNumber: "S8234570"
+      },
+      {
+        title: "Waterfront Condo in Coquina Key",
+        description: "Stunning waterfront condo with direct bay access and marina views. Perfect for boating enthusiasts or those seeking a relaxed waterfront lifestyle with all the amenities.",
+        price: 495000,
+        address: "789 Coquina Key Drive",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33701",
+        bedrooms: 2,
+        bathrooms: "2.0",
+        squareFeet: 1650,
+        propertyType: "Condo",
+        images: [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Waterfront Views", "Marina Access", "Fitness Center", "Pool", "Boat Slip", "Covered Parking", "Balcony", "Updated Kitchen"],
+        neighborhood: "Coquina Key",
+        yearBuilt: 2015,
+        isWaterfront: true,
+        isFeatured: true,
+        mlsNumber: "C8234571"
+      },
+      {
+        title: "Luxury Townhome in Crescent Lake",
+        description: "Elegant townhome in the heart of Crescent Lake with lake views and modern amenities. Features high-end finishes, private courtyard, and walking distance to parks and shopping.",
+        price: 585000,
+        address: "321 Crescent Lake Drive",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33704",
+        bedrooms: 3,
+        bathrooms: "2.5",
+        squareFeet: 2100,
+        propertyType: "Townhouse",
+        images: [
+          "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Lake Views", "Private Courtyard", "Two-Car Garage", "Gourmet Kitchen", "Master Suite", "Hardwood Floors", "Balcony", "Smart Home"],
+        neighborhood: "Crescent Lake",
+        yearBuilt: 2019,
+        isWaterfront: false,
+        isFeatured: true,
+        mlsNumber: "T8234572"
+      },
+      {
+        title: "Beachfront Paradise in Tierra Verde",
+        description: "Exclusive beachfront property in Tierra Verde with private beach access and stunning Gulf views. Features luxury finishes, pool, and outdoor living spaces perfect for entertaining.",
+        price: 1850000,
+        address: "567 Tierra Verde Boulevard",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33715",
+        bedrooms: 4,
+        bathrooms: "4.5",
+        squareFeet: 3800,
+        propertyType: "Single Family",
+        images: [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Beachfront", "Private Beach Access", "Infinity Pool", "Gourmet Kitchen", "Master Suite", "Outdoor Kitchen", "Boat Dock", "Smart Home"],
+        neighborhood: "Tierra Verde",
+        yearBuilt: 2021,
+        lotSize: "0.6",
+        isWaterfront: true,
+        isFeatured: true,
+        mlsNumber: "S8234573"
+      },
+      {
+        title: "Downtown Loft in Historic District",
+        description: "Unique loft conversion in the heart of downtown's historic district. Features exposed brick, high ceilings, and modern amenities while maintaining historic charm.",
+        price: 425000,
+        address: "234 Central Avenue",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33701",
+        bedrooms: 2,
+        bathrooms: "2.0",
+        squareFeet: 1800,
+        propertyType: "Condo",
+        images: [
+          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Exposed Brick", "High Ceilings", "Historic Charm", "Modern Kitchen", "In-Unit Laundry", "Covered Parking", "Balcony", "Walk Score 95"],
+        neighborhood: "Downtown",
+        yearBuilt: 1920,
+        isWaterfront: false,
+        isFeatured: false,
+        mlsNumber: "C8234574"
+      },
+      {
+        title: "Family Home in Allendale Terrace",
+        description: "Charming family home in Allendale Terrace with excellent schools and community amenities. Features updated kitchen, spacious backyard, and modern conveniences.",
+        price: 485000,
+        address: "789 Allendale Drive",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33703",
+        bedrooms: 3,
+        bathrooms: "2.0",
+        squareFeet: 1950,
+        propertyType: "Single Family",
+        images: [
+          "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Updated Kitchen", "Spacious Backyard", "One-Car Garage", "Walk-in Closets", "Tile Floors", "Ceiling Fans", "Storage Shed", "Fenced Yard"],
+        neighborhood: "Allendale Terrace",
+        yearBuilt: 1985,
+        lotSize: "0.25",
+        isWaterfront: false,
+        isFeatured: false,
+        mlsNumber: "S8234575"
+      },
+      {
+        title: "Waterfront Townhome in Bayway Isles",
+        description: "Luxurious waterfront townhome in exclusive Bayway Isles with private dock and stunning bay views. Features high-end finishes and resort-style amenities.",
+        price: 925000,
+        address: "456 Bayway Drive",
+        city: "St. Petersburg",
+        state: "FL",
+        zipCode: "33715",
+        bedrooms: 3,
+        bathrooms: "3.5",
+        squareFeet: 2400,
+        propertyType: "Townhouse",
+        images: [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        ],
+        features: ["Waterfront Views", "Private Dock", "Pool", "Gourmet Kitchen", "Master Suite", "Two-Car Garage", "Balcony", "Smart Home"],
+        neighborhood: "Bayway Isles",
+        yearBuilt: 2020,
+        isWaterfront: true,
+        isFeatured: false,
+        mlsNumber: "T8234576"
       }
     ];
 
@@ -367,6 +512,32 @@ export class MemStorage implements IStorage {
     };
     this.blogPosts.set(id, post);
     return post;
+  }
+
+  async updateBlogPost(slug: string, postUpdate: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const existingPost = Array.from(this.blogPosts.values()).find(post => post.slug === slug);
+    if (!existingPost) {
+      return undefined;
+    }
+
+    const updatedPost: BlogPost = {
+      ...existingPost,
+      ...postUpdate,
+      updatedAt: new Date(),
+    };
+
+    this.blogPosts.set(existingPost.id, updatedPost);
+    return updatedPost;
+  }
+
+  async deleteBlogPost(slug: string): Promise<boolean> {
+    const existingPost = Array.from(this.blogPosts.values()).find(post => post.slug === slug);
+    if (!existingPost) {
+      return false;
+    }
+
+    this.blogPosts.delete(existingPost.id);
+    return true;
   }
 
   // Neighborhood methods
