@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(215, 16%, 47%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(215, 16%, 47%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(215, 16%, 47%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(215, 16%, 47%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Real Estate Theme Colors */
+  --slate-gray: hsl(215, 16%, 47%);
+  --soft-blue: hsl(207, 90%, 54%);
+  --ocean-blue: hsl(215, 77%, 46%);
+  --beige-bg: hsl(60, 4.8%, 95.9%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-slate-gray {
+    color: var(--slate-gray);
+  }
+  
+  .text-soft-blue {
+    color: var(--soft-blue);
+  }
+  
+  .text-ocean-blue {
+    color: var(--ocean-blue);
+  }
+  
+  .bg-slate-gray {
+    background-color: var(--slate-gray);
+  }
+  
+  .bg-soft-blue {
+    background-color: var(--soft-blue);
+  }
+  
+  .bg-ocean-blue {
+    background-color: var(--ocean-blue);
+  }
+  
+  .bg-beige {
+    background-color: var(--beige-bg);
+  }
+  
+  .border-slate-gray {
+    border-color: var(--slate-gray);
+  }
+  
+  .border-soft-blue {
+    border-color: var(--soft-blue);
+  }
+  
+  .hover\:bg-ocean-blue:hover {
+    background-color: var(--ocean-blue);
+  }
+  
+  .hover\:text-soft-blue:hover {
+    color: var(--soft-blue);
+  }
+  
+  .focus\:ring-soft-blue:focus {
+    --tw-ring-color: var(--soft-blue);
+  }
+  
+  .focus\:border-soft-blue:focus {
+    border-color: var(--soft-blue);
+  }
+}
+
+/* Custom animations and transitions */
+.property-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.property-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.hero-bg {
+  background: linear-gradient(135deg, var(--soft-blue) 0%, var(--ocean-blue) 100%);
+}
+
+.section-padding {
+  @apply py-16 md:py-24;
+}
+
+.container-width {
+  @apply container mx-auto px-4;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom focus states for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive text utilities */
+.text-responsive-xl {
+  @apply text-2xl md:text-3xl lg:text-4xl xl:text-5xl;
+}
+
+.text-responsive-lg {
+  @apply text-xl md:text-2xl lg:text-3xl;
+}
+
+.text-responsive-md {
+  @apply text-lg md:text-xl lg:text-2xl;
+}

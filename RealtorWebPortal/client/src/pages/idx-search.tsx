@@ -18,76 +18,45 @@ export default function IDXSearch() {
   useEffect(() => {
     // Check for URL parameters to customize the IDX search
     const urlParams = new URLSearchParams(window.location.search);
-    const baseUrl = "https://stellar.mlsmatrix.com/Matrix/public/IDX.aspx";
     
-    if (urlParams.has('idx')) {
-      // If idx parameter exists, use all parameters as-is
-      setIdxUrl(`${baseUrl}?${urlParams.toString()}`);
-    } else {
-      // Build IDX URL with search parameters
-      const idxParams = new URLSearchParams();
-      idxParams.append('idx', 'cfc86fc2'); // Base IDX parameter
-      
-      // Map search parameters to IDX parameters
-      if (urlParams.has('property_class')) {
-        idxParams.append('property_class', urlParams.get('property_class')!);
-      }
-      
-      if (urlParams.has('min_price')) {
-        idxParams.append('min_price', urlParams.get('min_price')!);
-      }
-      
-      if (urlParams.has('max_price')) {
-        idxParams.append('max_price', urlParams.get('max_price')!);
-      }
-      
-      if (urlParams.has('min_bedrooms')) {
-        idxParams.append('min_bedrooms', urlParams.get('min_bedrooms')!);
-      }
-      
-      if (urlParams.has('city')) {
-        idxParams.append('city', urlParams.get('city')!);
-      }
-      
-      setIdxUrl(`${baseUrl}?${idxParams.toString()}`);
-      
-      // Build search filters display
-      const filters: string[] = [];
-      if (urlParams.has('property_class')) {
-        const propertyClass = urlParams.get('property_class')!;
-        const propertyTypeMap: { [key: string]: string } = {
-          'SFR': 'Single Family',
-          'CON': 'Condominium',
-          'TWH': 'Townhouse'
-        };
-        filters.push(propertyTypeMap[propertyClass] || propertyClass);
-      }
-      
-      if (urlParams.has('min_price') || urlParams.has('max_price')) {
-        const minPrice = urlParams.get('min_price');
-        const maxPrice = urlParams.get('max_price');
-        if (minPrice && maxPrice) {
-          filters.push(`$${parseInt(minPrice).toLocaleString()} - $${parseInt(maxPrice).toLocaleString()}`);
-        } else if (minPrice) {
-          filters.push(`$${parseInt(minPrice).toLocaleString()}+`);
-        } else if (maxPrice) {
-          filters.push(`Up to $${parseInt(maxPrice).toLocaleString()}`);
-        }
-      }
-      
-      if (urlParams.has('min_bedrooms')) {
-        const beds = urlParams.get('min_bedrooms')!;
-        filters.push(`${beds}+ Bedrooms`);
-      }
-      
-      if (urlParams.has('city')) {
-        filters.push(urlParams.get('city')!);
-      }
-      
-      setSearchFilters(filters);
+    // Build the correct MLS Matrix IDX URL
+    const baseUrl = "https://stellar.mlsmatrix.com/Matrix/Public/IDX.aspx";
+    const idxParams = new URLSearchParams();
+    
+    // Always include your IDX ID
+    idxParams.append('idx', 'cfc86fc2');
+    
+    // Copy all search parameters to IDX URL - MLS Matrix will handle them correctly
+    Array.from(urlParams.entries()).forEach(([key, value]) => {
+      idxParams.append(key, value);
+    });
+    
+    // Build filter display for user
+    const filters: string[] = [];
+    if (urlParams.has('PropertyType')) {
+      filters.push(`Property Type: ${urlParams.get('PropertyType')?.replace(',', ', ')}`);
+    }
+    if (urlParams.has('ListPriceMin') || urlParams.has('ListPriceMax')) {
+      const min = urlParams.get('ListPriceMin');
+      const max = urlParams.get('ListPriceMax');
+      const priceRange = `${min ? '$' + Number(min).toLocaleString() : 'Any'} - ${max ? '$' + Number(max).toLocaleString() : 'Any'}`;
+      filters.push(`Price: ${priceRange}`);
+    }
+    if (urlParams.has('BedroomsMin')) {
+      filters.push(`Min Bedrooms: ${urlParams.get('BedroomsMin')}`);
+    }
+    if (urlParams.has('City')) {
+      filters.push(`Location: ${urlParams.get('City')}`);
     }
     
-    trackEvent('idx_page_view', 'property_search', 'mls_matrix_fullscreen');
+    setSearchFilters(filters);
+    
+    // Set the complete IDX URL
+    const finalUrl = `${baseUrl}?${idxParams.toString()}`;
+    setIdxUrl(finalUrl);
+    
+    // Track IDX usage
+    trackEvent('idx_search_view', 'property_search', 'mls_integration');
 
     // Check if iframe fails to load after 5 seconds
     const timer = setTimeout(() => {
