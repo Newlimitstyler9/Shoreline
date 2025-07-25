@@ -57,7 +57,7 @@ export default function Home() {
           <div className="text-center text-white mb-12">
             <h1 className="text-responsive-xl font-bold mb-6 leading-tight">
               EXPERIENCE THE<br />
-              <span className="text-soft-blue">SHORELINE DIFFERENCE</span>
+              <span className="text-white">SHORELINE DIFFERENCE</span>
             </h1>
             <p className="text-responsive-md mb-8 text-gray-100 max-w-3xl mx-auto">
               Your Success Is Our Mission. Premier waterfront properties and exceptional service from St. Petersburg's most trusted real estate experts.
@@ -79,7 +79,7 @@ export default function Home() {
                 <Button 
                   size="lg"
                   variant="outline"
-                  className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold"
+                  className="border-2 border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold bg-transparent"
                   onClick={() => handleCTAClick('find_agent')}
                 >
                   <Users className="w-5 h-5 mr-2" />
@@ -90,7 +90,7 @@ export default function Home() {
                 <Button 
                   size="lg"
                   variant="outline"
-                  className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold"
+                  className="border-2 border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold bg-transparent"
                   onClick={() => handleCTAClick('join_team')}
                 >
                   <Award className="w-5 h-5 mr-2" />
