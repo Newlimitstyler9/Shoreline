@@ -14,6 +14,9 @@ import {
 
 const app = express();
 
+// Trust proxy for proper IP detection behind nginx
+app.set('trust proxy', true);
+
 // Validate environment variables
 validateEnvironment();
 
