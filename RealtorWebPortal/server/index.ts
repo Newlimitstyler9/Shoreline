@@ -17,16 +17,16 @@ const app = express();
 // Validate environment variables
 validateEnvironment();
 
-// Apply Helmet for security headers - TEMPORARILY DISABLED FOR IDX TESTING
-// app.use(helmet({
-//   contentSecurityPolicy: false, // Disable CSP temporarily to test
-//   crossOriginEmbedderPolicy: false,
-//   hsts: {
-//     maxAge: 31536000,
-//     includeSubDomains: true,
-//     preload: true
-//   }
-// }));
+// Apply Helmet for security headers - Re-enabled after fixing Nginx CSP
+app.use(helmet({
+  contentSecurityPolicy: false, // Nginx handles CSP now
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
 
 // CORS configuration to allow domain access
 app.use((req, res, next) => {
