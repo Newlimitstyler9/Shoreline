@@ -1,362 +1,257 @@
-import { useState } from "react";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
-import { 
-  Calculator, 
-  DollarSign, 
-  Home, 
-  TrendingUp,
-  ArrowRight,
-  Users
-} from "lucide-react";
+import { motion } from 'framer-motion';
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Calculator, Home, TrendingUp, Users, Phone } from 'lucide-react';
+import { useMortgageCalculator } from '@/hooks/useMortgageCalculator';
+import { LoanInputs } from '@/components/mortgage/LoanInputs';
+import { PaymentBreakdown } from '@/components/mortgage/PaymentBreakdown';
+import { trackEvent } from '@/lib/analytics';
+import { Link } from 'wouter';
 
 export default function MortgageCalculator() {
-  const [formData, setFormData] = useState({
-    homePrice: 500000,
-    downPayment: 100000,
-    interestRate: 6.5,
-    loanTerm: 30,
-    propertyTax: 5000,
-    insurance: 1200
-  });
+  const { inputs, updateInput, results, errors, validateInputs } = useMortgageCalculator();
 
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
-  const [totalPayment, setTotalPayment] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
-
-  const calculateMortgage = () => {
-    const principal = formData.homePrice - formData.downPayment;
-    const monthlyRate = formData.interestRate / 100 / 12;
-    const numberOfPayments = formData.loanTerm * 12;
-    
-    if (monthlyRate === 0) {
-      setMonthlyPayment(principal / numberOfPayments);
-    } else {
-      const monthlyPaymentAmount = principal * 
-        (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
-        (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-      setMonthlyPayment(monthlyPaymentAmount);
-    }
-    
-    const totalMonthlyPayment = monthlyPayment + (formData.propertyTax / 12) + (formData.insurance / 12);
-    setMonthlyPayment(totalMonthlyPayment);
-    
-    const totalPayments = totalMonthlyPayment * numberOfPayments;
-    setTotalPayment(totalPayments);
-    
-    const totalInterestPaid = totalPayments - principal;
-    setTotalInterest(totalInterestPaid);
+  const handleContactClick = () => {
+    trackEvent('mortgage_calculator_contact_click', 'engagement', 'contact_button');
+    window.location.href = '/contact';
   };
 
-  const handleInputChange = (field: string, value: number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handlePropertiesClick = () => {
+    trackEvent('mortgage_calculator_properties_click', 'engagement', 'properties_button');
+    window.location.href = '/properties';
   };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const downPaymentPercentage = ((formData.downPayment / formData.homePrice) * 100).toFixed(1);
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       
       {/* Hero Section */}
-      <section className="hero-bg py-20 md:py-32">
+      <section className="hero-bg py-16 md:py-24">
         <div className="container-width">
-          <div className="text-center text-white">
-            <h1 className="text-responsive-xl font-bold mb-6">
+          <motion.div 
+            className="text-center text-white max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-white bg-opacity-20 rounded-full">
+                <Calculator className="w-12 h-12 text-white" />
+              </div>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Mortgage Calculator
             </h1>
-            <p className="text-responsive-md text-gray-100 max-w-3xl mx-auto mb-8">
-              Calculate your monthly mortgage payments and understand the true cost of homeownership
+            <p className="text-xl text-gray-100 max-w-2xl mx-auto">
+              Calculate your monthly mortgage payments and see how different loan terms 
+              affect your budget. Plan your home purchase with confidence.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/contact">
-                <Button 
-                  size="lg"
-                  className="bg-white text-soft-blue px-8 py-4 hover:bg-gray-100 text-lg font-semibold"
-                >
-                  <Users className="w-5 h-5 mr-2" />
-                  Get Pre-Approved
-                </Button>
-              </Link>
-              <Link href="/buyers-guide">
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg font-semibold"
-                >
-                  <Home className="w-5 h-5 mr-2" />
-                  Buyer's Guide
-                </Button>
-              </Link>
-            </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Calculator Section */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-gray-50">
         <div className="container-width">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Calculator Form */}
-            <Card className="p-6">
-              <CardHeader>
-                <CardTitle className="flex items-center text-slate-gray">
-                  <Calculator className="w-6 h-6 mr-2 text-soft-blue" />
-                  Calculate Your Payment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <Label htmlFor="homePrice" className="text-sm font-medium text-slate-gray">
-                    Home Price
-                  </Label>
-                  <Input
-                    id="homePrice"
-                    type="number"
-                    value={formData.homePrice}
-                    onChange={(e) => handleInputChange('homePrice', Number(e.target.value))}
-                    className="mt-1"
-                    placeholder="500,000"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="downPayment" className="text-sm font-medium text-slate-gray">
-                    Down Payment
-                  </Label>
-                  <Input
-                    id="downPayment"
-                    type="number"
-                    value={formData.downPayment}
-                    onChange={(e) => handleInputChange('downPayment', Number(e.target.value))}
-                    className="mt-1"
-                    placeholder="100,000"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {downPaymentPercentage}% down payment
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="interestRate" className="text-sm font-medium text-slate-gray">
-                      Interest Rate (%)
-                    </Label>
-                    <Input
-                      id="interestRate"
-                      type="number"
-                      step="0.1"
-                      value={formData.interestRate}
-                      onChange={(e) => handleInputChange('interestRate', Number(e.target.value))}
-                      className="mt-1"
-                      placeholder="6.5"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="loanTerm" className="text-sm font-medium text-slate-gray">
-                      Loan Term (Years)
-                    </Label>
-                    <Input
-                      id="loanTerm"
-                      type="number"
-                      value={formData.loanTerm}
-                      onChange={(e) => handleInputChange('loanTerm', Number(e.target.value))}
-                      className="mt-1"
-                      placeholder="30"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="propertyTax" className="text-sm font-medium text-slate-gray">
-                      Annual Property Tax
-                    </Label>
-                    <Input
-                      id="propertyTax"
-                      type="number"
-                      value={formData.propertyTax}
-                      onChange={(e) => handleInputChange('propertyTax', Number(e.target.value))}
-                      className="mt-1"
-                      placeholder="5,000"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="insurance" className="text-sm font-medium text-slate-gray">
-                      Annual Insurance
-                    </Label>
-                    <Input
-                      id="insurance"
-                      type="number"
-                      value={formData.insurance}
-                      onChange={(e) => handleInputChange('insurance', Number(e.target.value))}
-                      className="mt-1"
-                      placeholder="1,200"
-                    />
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={calculateMortgage}
-                  className="w-full bg-soft-blue text-white hover:bg-ocean-blue"
-                >
-                  <Calculator className="w-4 h-4 mr-2" />
-                  Calculate Payment
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Results */}
-            <div className="space-y-6">
-              <Card className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Input Section */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-slate-gray">Monthly Payment Breakdown</CardTitle>
+                  <CardTitle className="text-slate-700 flex items-center gap-2">
+                    <Home className="w-5 h-5" />
+                    Loan Information
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-soft-blue">
-                      {formatCurrency(monthlyPayment)}
-                    </div>
-                    <p className="text-gray-600">per month</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-gray-600">Principal & Interest</div>
-                      <div className="font-semibold text-slate-gray">
-                        {formatCurrency(monthlyPayment - (formData.propertyTax / 12) - (formData.insurance / 12))}
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-gray-600">Property Tax</div>
-                      <div className="font-semibold text-slate-gray">
-                        {formatCurrency(formData.propertyTax / 12)}
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-gray-600">Insurance</div>
-                      <div className="font-semibold text-slate-gray">
-                        {formatCurrency(formData.insurance / 12)}
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-gray-600">Down Payment</div>
-                      <div className="font-semibold text-slate-gray">
-                        {formatCurrency(formData.downPayment)}
-                      </div>
-                    </div>
-                  </div>
+                <CardContent className="p-6">
+                  <LoanInputs 
+                    inputs={inputs} 
+                    updateInput={updateInput} 
+                    errors={errors} 
+                  />
                 </CardContent>
               </Card>
+            </motion.div>
 
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle className="text-slate-gray">Total Cost Analysis</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Interest Paid</span>
-                    <span className="font-semibold text-slate-gray">{formatCurrency(totalInterest)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Payments</span>
-                    <span className="font-semibold text-slate-gray">{formatCurrency(totalPayment)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Loan Amount</span>
-                    <span className="font-semibold text-slate-gray">
-                      {formatCurrency(formData.homePrice - formData.downPayment)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Results Section */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <PaymentBreakdown results={results} />
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Additional Resources */}
-      <section className="section-padding bg-gray-50">
+      {/* Features Section */}
+      <section className="section-padding bg-white">
         <div className="container-width">
-          <div className="text-center mb-12">
-            <h2 className="text-responsive-lg font-bold text-slate-gray mb-4">
-              Ready to Take the Next Step?
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <h2 className="text-3xl font-bold text-slate-gray mb-4">
+              Why Use Our Calculator?
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Get pre-approved and start your home buying journey with confidence
+              Get accurate estimates and understand all aspects of your future mortgage payment
             </p>
-          </div>
-          
+          </motion.div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="group hover:shadow-xl transition-all cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-gray mb-2">Get Pre-Approved</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Work with our trusted mortgage partners to get pre-approved quickly
-                </p>
-                <Link href="/contact">
-                  <Button variant="outline" className="w-full">
-                    Start Application
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Home className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-gray mb-2">Find Your Home</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Search our extensive database of properties in St. Petersburg
-                </p>
-                <Link href="/idx-search">
-                  <Button variant="outline" className="w-full">
-                    Search Properties
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-gray mb-2">Market Insights</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Stay informed about current market trends and interest rates
-                </p>
-                <Link href="/blog">
-                  <Button variant="outline" className="w-full">
-                    Read Blog
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            {[
+              {
+                icon: Calculator,
+                title: 'Accurate Calculations',
+                description: 'Uses standard mortgage formulas with real-time updates as you adjust inputs'
+              },
+              {
+                icon: TrendingUp,
+                title: 'Complete Breakdown',
+                description: 'See exactly where your money goes: principal, interest, taxes, and insurance'
+              },
+              {
+                icon: Users,
+                title: 'Expert Guidance',
+                description: 'Get tips and insights to help you make informed financial decisions'
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
+              >
+                <Card className="text-center h-full hover:shadow-lg transition-shadow">
+                  <CardContent className="p-8">
+                    <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                      <feature.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-slate-700 mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* Related Resources */}
+      <section className="section-padding bg-beige">
+        <div className="container-width">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
+          >
+            <h2 className="text-3xl font-bold text-slate-gray mb-4">
+              Ready to Start Your Home Search?
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Now that you know your budget, explore available properties or get pre-approved with our recommended lenders
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
+          >
+            <Link href="/properties">
+              <Button 
+                size="lg" 
+                className="w-full bg-soft-blue text-white hover:bg-ocean-blue h-16 text-lg"
+                onClick={handlePropertiesClick}
+              >
+                <Home className="w-5 h-5 mr-2" />
+                Search Properties
+              </Button>
+            </Link>
+            
+            <Link href="/contact">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="w-full border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white h-16 text-lg"
+                onClick={handleContactClick}
+              >
+                <Phone className="w-5 h-5 mr-2" />
+                Talk to an Expert
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Additional Resources */}
+      <section className="section-padding bg-white">
+        <div className="container-width">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.4 }}
+          >
+            <h2 className="text-2xl font-bold text-slate-gray mb-6">
+              Helpful Resources
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  title: 'First-Time Buyer Guide',
+                  description: 'Everything you need to know about buying your first home',
+                  link: '/buyers-guide'
+                },
+                {
+                  title: 'Mortgage Pre-Approval',
+                  description: 'Learn how to get pre-approved and strengthen your offer',
+                  link: '/contact'
+                },
+                {
+                  title: 'St. Petersburg Market',
+                  description: 'Current market trends and neighborhood insights',
+                  link: '/neighborhoods'
+                }
+              ].map((resource, index) => (
+                <motion.div
+                  key={resource.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 1.6 + index * 0.1 }}
+                >
+                  <Link href={resource.link}>
+                    <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                      <CardContent className="p-6">
+                        <h3 className="font-semibold text-slate-700 mb-2">
+                          {resource.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {resource.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
