@@ -16,6 +16,7 @@ import Contact from "@/pages/contact";
 import RelocationGuide from "@/pages/relocation-guide";
 import IDXSearch from "@/pages/idx-search";
 import MortgageCalculator from "@/pages/mortgage-calculator";
+import SellingProcess from "@/pages/selling-process";
 import NotFound from "@/pages/not-found";
 
 function ScrollToTop() {
@@ -45,6 +46,7 @@ function Router() {
         <Route path="/relocation-guide" component={RelocationGuide} />
         <Route path="/idx-search" component={IDXSearch} />
         <Route path="/mortgage-calculator" component={MortgageCalculator} />
+        <Route path="/selling-process" component={SellingProcess} />
         <Route component={NotFound} />
       </Switch>
     </>
