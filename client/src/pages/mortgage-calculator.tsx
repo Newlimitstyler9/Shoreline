@@ -7,19 +7,19 @@ import { Calculator, Home, TrendingUp, Users, Phone } from 'lucide-react';
 import { useMortgageCalculator } from '@/hooks/useMortgageCalculator';
 import { LoanInputs } from '@/components/mortgage/LoanInputs';
 import { PaymentBreakdown } from '@/components/mortgage/PaymentBreakdown';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, trackContact } from '@/lib/analytics';
 import { Link } from 'wouter';
 
 export default function MortgageCalculator() {
   const { inputs, updateInput, results, errors, validateInputs } = useMortgageCalculator();
 
   const handleContactClick = () => {
-    trackEvent('mortgage_calculator_contact_click', 'engagement', 'contact_button');
+    trackContact('click', 'mortgage_calculator');
     window.location.href = '/contact';
   };
 
   const handlePropertiesClick = () => {
-    trackEvent('mortgage_calculator_properties_click', 'engagement', 'properties_button');
+    trackEvent('navigation', 'engagement', 'mortgage_calculator_to_properties');
     window.location.href = '/properties';
   };
 

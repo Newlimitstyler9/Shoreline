@@ -25,18 +25,18 @@ import {
   ShieldCheck,
   Zap
 } from 'lucide-react';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, trackContact } from '@/lib/analytics';
 import { Link } from 'wouter';
 
 export default function SellingProcess() {
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('normal');
 
   const handleGetStartedClick = () => {
-    trackEvent('selling_process_get_started', 'engagement', 'cta_button');
+    trackContact('click', 'selling_process_consultation');
   };
 
   const handleValuationClick = () => {
-    trackEvent('selling_process_valuation_click', 'engagement', 'valuation_cta');
+    trackEvent('valuation_request', 'conversion', 'selling_process');
   };
 
   const sellingSteps = [
