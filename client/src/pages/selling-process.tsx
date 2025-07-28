@@ -43,7 +43,6 @@ export default function SellingProcess() {
     {
       step: 1,
       title: "Initial Consultation & Market Analysis",
-      duration: "Week 1",
       description: "We'll meet to discuss your goals, timeline, and provide a comprehensive market analysis of your home's value.",
       details: [
         "Free in-home consultation",
@@ -51,13 +50,11 @@ export default function SellingProcess() {
         "Pricing strategy discussion",
         "Timeline and goals assessment"
       ],
-      icon: MessageSquare,
-      color: "bg-blue-500"
+      icon: MessageSquare
     },
     {
       step: 2,
       title: "Preparation & Home Staging",
-      duration: "Weeks 2-3",
       description: "Prepare your home to make the best impression on potential buyers with strategic improvements and staging.",
       details: [
         "Home staging consultation",
@@ -65,13 +62,11 @@ export default function SellingProcess() {
         "Deep cleaning coordination",
         "Decluttering guidance"
       ],
-      icon: Home,
-      color: "bg-green-500"
+      icon: Home
     },
     {
       step: 3,
       title: "Professional Photography & Marketing",
-      duration: "Week 4",
       description: "Showcase your home with professional photography and create compelling marketing materials.",
       details: [
         "Professional photography session",
@@ -79,13 +74,11 @@ export default function SellingProcess() {
         "Marketing materials design",
         "MLS listing preparation"
       ],
-      icon: Camera,
-      color: "bg-purple-500"
+      icon: Camera
     },
     {
       step: 4,
       title: "Launch Marketing Campaign",
-      duration: "Week 5",
       description: "Go live with your listing across all major platforms and begin showing your home to qualified buyers.",
       details: [
         "MLS listing activation",
@@ -93,13 +86,11 @@ export default function SellingProcess() {
         "Social media promotion",
         "Schedule showings and open houses"
       ],
-      icon: TrendingUp,
-      color: "bg-orange-500"
+      icon: TrendingUp
     },
     {
       step: 5,
       title: "Showings & Negotiations",
-      duration: "Weeks 6-8",
       description: "Host showings, review offers, and negotiate the best terms for your sale.",
       details: [
         "Coordinate showings",
@@ -107,13 +98,11 @@ export default function SellingProcess() {
         "Negotiate terms and price",
         "Accept best offer"
       ],
-      icon: Users,
-      color: "bg-red-500"
+      icon: Users
     },
     {
       step: 6,
       title: "Closing Process",
-      duration: "Weeks 9-12",
       description: "Navigate the closing process from contract to keys, ensuring a smooth transaction.",
       details: [
         "Contract execution",
@@ -121,8 +110,7 @@ export default function SellingProcess() {
         "Appraisal facilitation",
         "Final walkthrough and closing"
       ],
-      icon: Award,
-      color: "bg-indigo-500"
+      icon: Award
     }
   ];
 
@@ -213,7 +201,7 @@ export default function SellingProcess() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-white text-white px-8 py-4 hover:bg-white hover:text-soft-blue text-lg"
+                  className="border-white text-soft-blue px-8 py-4 hover:bg-white hover:text-soft-blue text-lg"
                   onClick={handleValuationClick}
                 >
                   <DollarSign className="w-5 h-5 mr-2" />
@@ -256,15 +244,12 @@ export default function SellingProcess() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                       {/* Step Number & Icon */}
                       <div className="lg:col-span-2 bg-gray-50 p-6 flex flex-col items-center justify-center">
-                        <div className={`w-16 h-16 ${step.color} rounded-full flex items-center justify-center mb-4`}>
+                        <div className="w-16 h-16 bg-soft-blue rounded-full flex items-center justify-center mb-4">
                           <Icon className="w-8 h-8 text-white" />
                         </div>
                         <Badge variant="outline" className="text-sm font-medium">
                           Step {step.step}
                         </Badge>
-                        <p className="text-sm text-gray-500 mt-2 text-center">
-                          {step.duration}
-                        </p>
                       </div>
 
                       {/* Content */}
